@@ -1,0 +1,2 @@
+# ExpoBarCodeReaderTest
+test
