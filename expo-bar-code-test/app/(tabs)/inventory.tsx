@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, FlatList, Pressable } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 
 type ViewType = 'total' | 'shelf' | 'storage';
 
@@ -51,218 +49,96 @@ export default function InventoryScreen() {
   };
 
   const isDark = colorScheme === 'dark';
-  const segmentBgColor = isDark ? '#2C2C2E' : '#E5E5EA';
-  const activeSegmentBgColor = Colors[colorScheme ?? 'light'].tint;
-  const searchBarBgColor = isDark ? '#2C2C2E' : '#E5E5EA';
-  const inputTextColor = Colors[colorScheme ?? 'light'].text;
-  const placeholderColor = isDark ? '#8E8E93' : '#8E8E93';
-  const itemBgColor = isDark ? '#2C2C2E' : '#F2F2F7';
-  const badgeBgColor = isDark ? 'rgba(10, 132, 255, 0.2)' : 'rgba(0, 122, 255, 0.15)';
-  const badgeTextColor = isDark ? '#0A84FF' : '#007AFF';
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const placeholderColor = '#8E8E93';
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="title">Inventory</ThemedText>
+    <View className="flex-1 bg-background">
+      <View className="pt-16 px-5 pb-4">
+        <Text className="text-3xl font-bold text-foreground">Inventory</Text>
       </View>
 
       {/* Segmented Control */}
-      <View style={[styles.segmentedControl, { backgroundColor: segmentBgColor }]}>
+      <View className="flex-row mx-5 mb-4 rounded-xl p-1 bg-secondary">
         <Pressable
-          style={[
-            styles.segment,
-            selectedView === 'shelf' && {
-              backgroundColor: activeSegmentBgColor,
-            },
-          ]}
+          className={`flex-1 py-2 items-center rounded-lg ${selectedView === 'shelf' ? 'bg-primary' : ''}`}
           onPress={() => setSelectedView('shelf')}>
-          <ThemedText
-            lightColor={selectedView === 'shelf' ? '#fff' : undefined}
-            darkColor={selectedView === 'shelf' ? '#000' : undefined}
-            style={styles.segmentText}>
+          <Text className={`text-sm font-semibold ${selectedView === 'shelf' ? 'text-primary-foreground' : 'text-foreground'}`}>
             On Shelf
-          </ThemedText>
+          </Text>
         </Pressable>
 
         <Pressable
-          style={[
-            styles.segment,
-            selectedView === 'storage' && {
-              backgroundColor: activeSegmentBgColor,
-            },
-          ]}
+          className={`flex-1 py-2 items-center rounded-lg ${selectedView === 'storage' ? 'bg-primary' : ''}`}
           onPress={() => setSelectedView('storage')}>
-          <ThemedText
-            lightColor={selectedView === 'storage' ? '#fff' : undefined}
-            darkColor={selectedView === 'storage' ? '#000' : undefined}
-            style={styles.segmentText}>
+          <Text className={`text-sm font-semibold ${selectedView === 'storage' ? 'text-primary-foreground' : 'text-foreground'}`}>
             Storage
-          </ThemedText>
+          </Text>
         </Pressable>
 
         <Pressable
-          style={[
-            styles.segment,
-            selectedView === 'total' && {
-              backgroundColor: activeSegmentBgColor,
-            },
-          ]}
+          className={`flex-1 py-2 items-center rounded-lg ${selectedView === 'total' ? 'bg-primary' : ''}`}
           onPress={() => setSelectedView('total')}>
-          <ThemedText
-            lightColor={selectedView === 'total' ? '#fff' : undefined}
-            darkColor={selectedView === 'total' ? '#000' : undefined}
-            style={styles.segmentText}>
+          <Text className={`text-sm font-semibold ${selectedView === 'total' ? 'text-primary-foreground' : 'text-foreground'}`}>
             Total
-          </ThemedText>
+          </Text>
         </Pressable>
       </View>
 
       {/* Search Bar with QR Scanner */}
-      <View style={styles.searchContainer}>
-        <View style={[styles.searchBar, { backgroundColor: searchBarBgColor }]}>
+      <View className="flex-row px-5 mb-4 gap-3">
+        <View className="flex-1 flex-row items-center rounded-xl px-3 gap-2 h-11 bg-secondary">
           <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
           <TextInput
-            style={[styles.searchInput, { color: inputTextColor }]}
+            className="flex-1 text-base text-foreground"
             placeholder="Search products or barcodes..."
             placeholderTextColor={placeholderColor}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons size={20} name="search" color={placeholderColor} />
-            </TouchableOpacity>
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Ionicons size={20} name="close-circle" color={placeholderColor} />
+            </Pressable>
           )}
         </View>
 
-        <TouchableOpacity style={[styles.scanButton, { backgroundColor: searchBarBgColor }]} onPress={handleScanPress}>
-          <Ionicons size={24} name="qr-code" color={Colors[colorScheme ?? 'light'].tint} />
-        </TouchableOpacity>
+        <Pressable 
+          className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" 
+          onPress={handleScanPress}
+        >
+          <Ionicons size={24} name="qr-code" color={tintColor} />
+        </Pressable>
       </View>
 
       {/* Inventory List */}
       <FlatList
         data={filteredInventory}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingHorizontal: 20 }}
         renderItem={({ item }) => (
-          <View style={[styles.inventoryItem, { backgroundColor: itemBgColor }]}>
-            <View style={styles.itemInfo}>
-              <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-              <ThemedText style={styles.itemBarcode}>Barcode: {item.barcode}</ThemedText>
-              <View style={styles.itemDetails}>
-                <View style={[styles.badge, { backgroundColor: badgeBgColor }]}>
-                  <ThemedText lightColor={badgeTextColor} darkColor={badgeTextColor} style={styles.badgeText}>
+          <View className="rounded-xl p-4 mb-3 bg-card">
+            <View className="gap-1.5">
+              <Text className="font-semibold text-foreground">{item.name}</Text>
+              <Text className="text-xs text-foreground-muted">Barcode: {item.barcode}</Text>
+              <View className="flex-row items-center gap-3 mt-1">
+                <View className="px-2 py-1 rounded-md bg-primary/15">
+                  <Text className="text-xs font-medium text-primary">
                     {item.location === 'shelf' ? 'On Shelf' : 'Storage'}
-                  </ThemedText>
+                  </Text>
                 </View>
-                <ThemedText style={styles.quantity}>Qty: {item.quantity}</ThemedText>
+                <Text className="text-sm text-foreground-secondary">Qty: {item.quantity}</Text>
               </View>
             </View>
           </View>
         )}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <View className="items-center justify-center py-16 gap-3">
             <IconSymbol size={60} name="shippingbox" color={placeholderColor} />
-            <ThemedText style={styles.emptyText}>No items found</ThemedText>
+            <Text className="text-base text-foreground-muted">No items found</Text>
           </View>
         }
       />
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 10,
-    padding: 4,
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  segmentText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    gap: 12,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    gap: 8,
-    height: 44,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-  },
-  scanButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listContent: {
-    paddingHorizontal: 20,
-  },
-  inventoryItem: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  itemInfo: {
-    gap: 6,
-  },
-  itemBarcode: {
-    fontSize: 12,
-  },
-  itemDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 4,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  quantity: {
-    fontSize: 14,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-  },
-});

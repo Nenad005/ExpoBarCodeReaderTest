@@ -1,17 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Stack, router } from 'expo-router';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [data, setData] = useState<string | null>(null);
-  const colorScheme = useColorScheme();
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     setScanned(true);
@@ -27,23 +22,23 @@ export default function ScanScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View className="flex-1 bg-transparent">
       <Stack.Screen options={{ title: 'Scan Barcode' }} />
 
       {!permission ? (
-        <ThemedText>Requesting camera permission...</ThemedText>
+        <Text className="text-foreground p-4">Requesting camera permission...</Text>
       ) : !permission.granted ? (
-        <View style={styles.infoContainer}>
-          <ThemedText>Camera permission is required to scan barcodes.</ThemedText>
-          <TouchableOpacity
+        <View className="p-4">
+          <Text className="text-foreground">Camera permission is required to scan barcodes.</Text>
+          <Pressable
             onPress={requestPermission}
-            style={[styles.button, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#fff' }]}
+            className="mt-4 py-3 px-6 rounded-lg items-center bg-card shadow-md"
           >
-            <ThemedText type="defaultSemiBold">Grant permission</ThemedText>
-          </TouchableOpacity>
+            <Text className="font-semibold text-foreground">Grant permission</Text>
+          </Pressable>
         </View>
       ) : (
-        <View style={styles.scannerContainer}>
+        <View className="flex-1">
           <CameraView
             style={StyleSheet.absoluteFillObject}
             facing="back"
@@ -67,77 +62,29 @@ export default function ScanScreen() {
             }}
           />
 
-          <View style={styles.overlay} pointerEvents="none">
-            <View style={styles.overlayTextContainer}>
-              <ThemedText lightColor="#fff" darkColor="#fff" style={styles.overlayText}>
+          <View className="absolute left-0 right-0 top-8 items-center" pointerEvents="none">
+            <View className="bg-black/70 py-2.5 px-4 rounded-lg">
+              <Text className="text-white text-base font-semibold">
                 {scanned ? `Scanned: ${data}` : 'Point the camera at a barcode'}
-              </ThemedText>
+              </Text>
             </View>
           </View>
 
           {scanned && (
-            <View style={styles.controls}>
-              <TouchableOpacity
+            <View className="absolute bottom-10 left-0 right-0 items-center">
+              <Pressable
                 onPress={() => {
                   setScanned(false);
                   setData(null);
                 }}
-                style={[styles.button, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#fff' }]}
+                className="py-3 px-6 rounded-lg items-center bg-card shadow-md"
               >
-                <ThemedText type="defaultSemiBold">Scan again</ThemedText>
-              </TouchableOpacity>
+                <Text className="font-semibold text-foreground">Scan again</Text>
+              </Pressable>
             </View>
           )}
         </View>
       )}
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  scannerContainer: {
-    flex: 1,
-  },
-  infoContainer: {
-    padding: 16,
-  },
-  overlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 32,
-    alignItems: 'center',
-  },
-  overlayTextContainer: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  overlayText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  controls: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});

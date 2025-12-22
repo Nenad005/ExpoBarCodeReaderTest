@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --color-background: #ffffff;
+    --color-background-secondary: #f4f4f5;
+    --color-background-tertiary: #e4e4e7;
+    
+    --color-foreground: #27272a;
+    --color-foreground-secondary: #52525b;
+    --color-foreground-muted: #71717a;
+    
+    --color-primary: #2563eb;
+    --color-primary-foreground: #ffffff;
+    
+    --color-secondary: #f4f4f5;
+    --color-secondary-foreground: #27272a;
+    
+    --color-accent: #8b5cf6;
+    --color-accent-foreground: #ffffff;
+    
+    --color-success: #22c55e;
+    --color-success-foreground: #ffffff;
+    
+    --color-warning: #f59e0b;
+    --color-warning-foreground: #27272a;
+    
+    --color-danger: #ef4444;
+    --color-danger-foreground: #ffffff;
+    
+    --color-border: #e4e4e7;
+    --color-border-secondary: #d4d4d8;
+    
+    --color-input: #ffffff;
+    --color-input-border: #d4d4d8;
+    
+    --color-card: #ffffff;
+    --color-card-foreground: #27272a;
+    
+    --color-muted: #f4f4f5;
+    --color-muted-foreground: #71717a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark mode colors */
+      --color-background: #09090b;
+      --color-background-secondary: #18181b;
+      --color-background-tertiary: #27272a;
+      
+      --color-foreground: #fafafa;
+      --color-foreground-secondary: #d4d4d8;
+      --color-foreground-muted: #a1a1aa;
+      
+      --color-primary: #3b82f6;
+      --color-primary-foreground: #ffffff;
+      
+      --color-secondary: #27272a;
+      --color-secondary-foreground: #fafafa;
+      
+      --color-accent: #a78bfa;
+      --color-accent-foreground: #09090b;
+      
+      --color-success: #4ade80;
+      --color-success-foreground: #09090b;
+      
+      --color-warning: #fbbf24;
+      --color-warning-foreground: #09090b;
+      
+      --color-danger: #f87171;
+      --color-danger-foreground: #09090b;
+      
+      --color-border: #27272a;
+      --color-border-secondary: #3f3f46;
+      
+      --color-input: #18181b;
+      --color-input-border: #3f3f46;
+      
+      --color-card: #18181b;
+      --color-card-foreground: #fafafa;
+      
+      --color-muted: #27272a;
+      --color-muted-foreground: #a1a1aa;
+    }
+  }
+}

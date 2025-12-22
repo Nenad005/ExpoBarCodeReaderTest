@@ -1,76 +1,35 @@
-  import { StyleSheet, View } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+  import { Text, View } from 'react-native';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="title">Welcome</ThemedText>
+    <View className="flex-1 bg-background">
+      <View className="pt-16 px-5 pb-5">
+        <Text className="text-3xl font-bold text-danger">Welcome</Text>
       </View>
       
-      <View style={styles.content}>
-        <ThemedText type="subtitle">Inventory Management System</ThemedText>
-        <ThemedText style={styles.description}>
+      <View className="flex-1 px-5 gap-4">
+        <Text className="text-xl font-semibold text-foreground">
+          Inventory Management System
+        </Text>
+        <Text className="text-base leading-6 text-foreground-secondary">
           Use the Inventory tab to manage your products and scan barcodes.
-        </ThemedText>
+        </Text>
         
-        <View style={styles.statsContainer}>
-          <View style={[styles.statCard, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7' }]}>
-            <ThemedText type="defaultSemiBold" style={styles.statNumber}>0</ThemedText>
-            <ThemedText style={styles.statLabel}>Total Items</ThemedText>
+        <View className="flex-row gap-3 mt-5">
+          <View className="flex-1 p-4 rounded-xl items-center bg-card">
+            <Text className="text-3xl font-semibold text-foreground mb-1">0</Text>
+            <Text className="text-xs text-foreground-muted">Total Items</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7' }]}>
-            <ThemedText type="defaultSemiBold" style={styles.statNumber}>0</ThemedText>
-            <ThemedText style={styles.statLabel}>On Shelf</ThemedText>
+          <View className="flex-1 p-4 rounded-xl items-center bg-card">
+            <Text className="text-3xl font-semibold text-foreground mb-1">0</Text>
+            <Text className="text-xs text-foreground-muted">On Shelf</Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F2F2F7' }]}>
-            <ThemedText type="defaultSemiBold" style={styles.statNumber}>0</ThemedText>
-            <ThemedText style={styles.statLabel}>In Storage</ThemedText>
+          <View className="flex-1 p-4 rounded-xl items-center bg-card">
+            <Text className="text-3xl font-semibold text-foreground mb-1">0</Text>
+            <Text className="text-xs text-foreground-muted">In Storage</Text>
           </View>
         </View>
       </View>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    gap: 16,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  statCard: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 28,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-  },
-});
