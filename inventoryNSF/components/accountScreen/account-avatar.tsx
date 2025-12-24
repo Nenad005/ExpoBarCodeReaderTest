@@ -238,7 +238,7 @@ const getGradientFromSeed = (seed: string | number) : Array<string> => {
 };
 
 export default function AccountAvatar({ account, onPress, onLongPress }: AccountAvatarProps) {
-    const gradient = account ? getGradientFromSeed(account.nickname) : null;
+    const gradient = account ? getGradientFromSeed(account.email) : null;
 
     return (
         <Pressable 
