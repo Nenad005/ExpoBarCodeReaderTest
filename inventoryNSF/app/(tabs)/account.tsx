@@ -3,7 +3,23 @@ import CreateAccountModal from '@/components/accountScreen/create-account-modal'
 import EditAccountModal from '@/components/accountScreen/edit-account-modal';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
+
+// Helper functions to handle web vs native storage
+const getStorageItem = (key: string): string | null => {
+  if (Platform.OS === 'web') {
+    return localStorage.getItem(key);
+  }
+  return SecureStore.getItem(key);
+};
+
+const setStorageItem = (key: string, value: string): void => {
+  if (Platform.OS === 'web') {
+    localStorage.setItem(key, value);
+  } else {
+    SecureStore.setItem(key, value);
+  }
+};
 
 
 export type Account = {
@@ -21,15 +37,15 @@ export default function AccountScreen() {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   useEffect(() => {
-    let accounts_string = SecureStore.getItem("accounts");
+    let accounts_string = getStorageItem("accounts");
     if (!accounts_string) {
-      SecureStore.setItem("accounts", "[]");
-      SecureStore.setItem("active_account_id", "");
+      setStorageItem("accounts", "[]");
+      setStorageItem("active_account_id", "");
     }
     else {
       let accounts_dict : Array<Account> = JSON.parse(accounts_string);
       setAccounts(accounts_dict)
-      let active_account_id = SecureStore.getItem("active_account_id")
+      let active_account_id = getStorageItem("active_account_id")
       if (active_account_id && active_account_id.length > 1){
         let activeAccount = accounts_dict.find(account => account.id = active_account_id)
         if (activeAccount != undefined) setActiveAccount(activeAccount)
@@ -40,13 +56,13 @@ export default function AccountScreen() {
   const handleCreateAccount = (newAccount: Account) => {
     const updatedAccounts = [...accounts, newAccount];
     setAccounts(updatedAccounts);
-    SecureStore.setItem("accounts", JSON.stringify(updatedAccounts));
+    setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowCreateModal(false);
   };
 
   const handleSignOut = () => {
     setActiveAccount(null);
-    SecureStore.setItem("active_account_id", "");
+    setStorageItem("active_account_id", "");
   };
 
   const handleEditAccount = (updatedAccount: Account) => {
@@ -54,7 +70,7 @@ export default function AccountScreen() {
       acc.id === updatedAccount.id ? updatedAccount : acc
     );
     setAccounts(updatedAccounts);
-    SecureStore.setItem("accounts", JSON.stringify(updatedAccounts));
+    setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
   };
@@ -62,7 +78,7 @@ export default function AccountScreen() {
   const handleDeleteAccount = (accountId: string) => {
     const updatedAccounts = accounts.filter((acc) => acc.id !== accountId);
     setAccounts(updatedAccounts);
-    SecureStore.setItem("accounts", JSON.stringify(updatedAccounts));
+    setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
   };
@@ -127,7 +143,7 @@ export default function AccountScreen() {
                     account={account} 
                     onPress={() => {
                       setActiveAccount(account);
-                      SecureStore.setItem("active_account_id", account.id);
+                      setStorageItem("active_account_id", account.id);
                     }}
                     onLongPress={() => openEditModal(account)}
                   />

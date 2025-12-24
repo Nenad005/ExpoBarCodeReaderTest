@@ -126,7 +126,7 @@ export default function CreateAccountModal({
                         {/* Email Input */}
                         <View className="mb-4">
                             <Text className="text-foreground-secondary text-sm mb-2">
-                                Email
+                                Email <Text className="text-accent">( Upfit - Username)</Text>
                             </Text>
                             <TextInput
                                 className="bg-secondary text-foreground rounded-xl px-4 py-3"
@@ -146,7 +146,7 @@ export default function CreateAccountModal({
                         {/* Password Input */}
                         <View className="mb-6">
                             <Text className="text-foreground-secondary text-sm mb-2">
-                                Password
+                                Password <Text className="text-accent">( Upfit - Password )</Text>
                             </Text>
                             <View className="flex-row items-center bg-secondary rounded-xl">
                                 <TextInput
