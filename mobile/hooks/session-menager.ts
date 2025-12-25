@@ -32,6 +32,10 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
     const [isLoading, setIsLoading] = useState(false)
 
     const fetchSessionId = async () => {
+        if (account == null){
+            setSessionId(null)
+            return
+        }
         try {
             const response = await getPhpSessionIdPhpSessIdPost({body: {username: account.email, password: account.password}})
             if (response.data?.PHPSESSID) {
