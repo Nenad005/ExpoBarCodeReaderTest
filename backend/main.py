@@ -16,6 +16,7 @@ class UpfitAccount(BaseModel):
 
 class SessionResponse(BaseModel):
     PHPSESSID: str
+    clubName: str | None
 
 
 class ErrorResponse(BaseModel):
@@ -61,6 +62,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
     try:
         with sync_playwright() as p:
             phpsessid = None
+            clubName = None
             
             try:
                 browser = p.chromium.launch(headless=True)
@@ -158,6 +160,13 @@ def get_php_session_id(upfit_account: UpfitAccount):
                         detail="Login failed - session not created. Check your credentials."
                     )
                 
+                try:
+                    club_name = page.locator(".page-title").first.locator("strong").first.text_content()
+                except Exception as e:
+                    logger.warning("Couldn`t fetch club name from Dashboard !")
+                
+                # print(page_title)
+                
             finally:
                 if browser:
                     try:
@@ -167,7 +176,10 @@ def get_php_session_id(upfit_account: UpfitAccount):
         
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content={"PHPSESSID": phpsessid}
+            content={
+                "PHPSESSID": phpsessid,
+                "clubName" : club_name
+            }
         )
         
     except HTTPException:
