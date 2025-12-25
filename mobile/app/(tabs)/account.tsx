@@ -2,19 +2,12 @@ import { getPhpSessionIdPhpSessIdPost } from '@/backend-client';
 import AccountAvatar from '@/components/accountScreen/account-avatar';
 import CreateAccountModal from '@/components/accountScreen/create-account-modal';
 import EditAccountModal from '@/components/accountScreen/edit-account-modal';
+import { Account } from '@/hooks/session-menager';
 import { getStorageItem, setStorageItem } from '@/utils/storageItemsHelper';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-
-
-export type Account = {
-  id: string;
-  nickname: string;
-  email: string;
-  password: string; 
-}
 
 export default function AccountScreen() {
   const [accounts, setAccounts] = useState<Array<Account>>([]);
