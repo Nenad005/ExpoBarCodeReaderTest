@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +27,13 @@ app = FastAPI(
     title="NSF-Inventory API",
     description="API to retrieve PHP session ID from Upfit",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Your frontend URL
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

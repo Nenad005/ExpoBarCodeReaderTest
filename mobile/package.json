@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
+    "generate-client": "openapi-ts -i http://localhost:8000/openapi.json -o backend-client -c @hey-api/client-fetch",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@hey-api/client-fetch": "^0.13.1",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
@@ -20,7 +22,6 @@
     "expo": "~54.0.30",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.10",
-    "expo-dev-client": "~6.0.20",
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",

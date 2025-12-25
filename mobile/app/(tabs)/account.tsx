@@ -1,7 +1,9 @@
+import { getPhpSessionIdPhpSessIdPost } from '@/backend-client';
 import AccountAvatar from '@/components/accountScreen/account-avatar';
 import CreateAccountModal from '@/components/accountScreen/create-account-modal';
 import EditAccountModal from '@/components/accountScreen/edit-account-modal';
 import { getStorageItem, setStorageItem } from '@/utils/storageItemsHelper';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -20,6 +22,12 @@ export default function AccountScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const {isEnabled, isPending, isLoading, isError, data, refetch} = useQuery({queryKey: ["PHPSESSID"], queryFn: async () => {
+    if (!activeAccount) return
+    let res = await getPhpSessionIdPhpSessIdPost({body: {username: activeAccount.email, password: activeAccount.password}})
+    return res;
+  }})
+  
 
   useEffect(() => {
     let accounts_string = getStorageItem("accounts");
@@ -106,6 +114,10 @@ export default function AccountScreen() {
                     <Text className="text-foreground-muted text-xs">{activeAccount.id}</Text>
                   </View>
                 </View>
+              </View>
+              <View>
+                <Pressable className='bg-primary' onPress={() => refetch()}><Text>Fetch</Text></Pressable>
+                <Text className='text-foreground-muted'>{`data: ${JSON.stringify(data)}, isLoading : ${isLoading}, isPending : ${isPending}, isErorr : ${isError}`}</Text>
               </View>
 
               {/* Sign Out Button */}
