@@ -1,25 +1,10 @@
 import AccountAvatar from '@/components/accountScreen/account-avatar';
 import CreateAccountModal from '@/components/accountScreen/create-account-modal';
 import EditAccountModal from '@/components/accountScreen/edit-account-modal';
-import * as SecureStore from 'expo-secure-store';
+import { getStorageItem, setStorageItem } from '@/utils/storageItemsHelper';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-// Helper functions to handle web vs native storage
-const getStorageItem = (key: string): string | null => {
-  if (Platform.OS === 'web') {
-    return localStorage.getItem(key);
-  }
-  return SecureStore.getItem(key);
-};
-
-const setStorageItem = (key: string, value: string): void => {
-  if (Platform.OS === 'web') {
-    localStorage.setItem(key, value);
-  } else {
-    SecureStore.setItem(key, value);
-  }
-};
 
 
 export type Account = {
