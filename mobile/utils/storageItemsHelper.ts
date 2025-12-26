@@ -16,3 +16,11 @@ export function setStorageItem (key: string, value: string): void {
     SecureStore.setItem(key, value);
   }
 };
+
+export function removeStorageItem (key: string): void {
+  if (Platform.OS === 'web') {
+    localStorage.removeItem(key);
+  } else {
+    SecureStore.deleteItemAsync(key);
+  }
+};

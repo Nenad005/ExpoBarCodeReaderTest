@@ -1,41 +1,28 @@
-import { getPhpSessionIdPhpSessIdPost } from '@/backend-client';
 import AccountAvatar from '@/components/accountScreen/account-avatar';
 import CreateAccountModal from '@/components/accountScreen/create-account-modal';
 import EditAccountModal from '@/components/accountScreen/edit-account-modal';
-import { Account } from '@/hooks/session-menager';
+import { Account, useSession } from '@/hooks/session-menager';
+import { cn } from '@/utils/cn';
 import { getStorageItem, setStorageItem } from '@/utils/storageItemsHelper';
-import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 
 export default function AccountScreen() {
+  const { account: activeAccount, handleSignIn, handleSignOut, refetchSessionId, sessionId, isLoading: isSessionLoading, authorized } = useSession();
   const [accounts, setAccounts] = useState<Array<Account>>([]);
-  const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const {isEnabled, isPending, isLoading, isError, data, refetch} = useQuery({queryKey: ["PHPSESSID"], queryFn: async () => {
-    if (!activeAccount) return
-    let res = await getPhpSessionIdPhpSessIdPost({body: {username: activeAccount.email, password: activeAccount.password}})
-    return res;
-  }})
-  
 
   useEffect(() => {
     let accounts_string = getStorageItem("accounts");
     if (!accounts_string) {
       setStorageItem("accounts", "[]");
-      setStorageItem("active_account_id", "");
     }
     else {
       let accounts_dict : Array<Account> = JSON.parse(accounts_string);
       setAccounts(accounts_dict)
-      let active_account_id = getStorageItem("active_account_id")
-      if (active_account_id && active_account_id.length > 1){
-        let activeAccount = accounts_dict.find(account => account.id = active_account_id)
-        if (activeAccount != undefined) setActiveAccount(activeAccount)
-      }
     }
   }, [])
 
@@ -46,9 +33,8 @@ export default function AccountScreen() {
     setShowCreateModal(false);
   };
 
-  const handleSignOut = () => {
-    setActiveAccount(null);
-    setStorageItem("active_account_id", "");
+  const onSignOut = () => {
+    handleSignOut();
   };
 
   const handleEditAccount = (updatedAccount: Account) => {
@@ -59,6 +45,10 @@ export default function AccountScreen() {
     setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
+
+    if (activeAccount?.id === updatedAccount.id) {
+        handleSignIn(updatedAccount);
+    }
   };
 
   const handleDeleteAccount = (accountId: string) => {
@@ -67,14 +57,16 @@ export default function AccountScreen() {
     setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
+
+    if (activeAccount?.id === accountId) {
+        handleSignOut();
+    }
   };
 
   const openEditModal = (account: Account) => {
     setEditingAccount(account);
     setShowEditModal(true);
   }
-
-  // console.log(accounts)
 
   return (
     <View className="flex flex-col justify-center items-center p-10 h-screen w-screen bg-background">
@@ -83,7 +75,10 @@ export default function AccountScreen() {
           {activeAccount ? 
             <View className="w-full flex flex-col items-center gap-6">
               {/* Profile Header */}
-              <AccountAvatar account={activeAccount} />
+              <View className='flex justify-center items-center relative border-red-400'>
+                <AccountAvatar className='' account={activeAccount} />
+                <View className={cn(isSessionLoading ? "bg-orange-400" : authorized ? "bg-green-400": "bg-red-400", 'w-5 h-5 !rounded-full absolute top-0 right-0')}></View>
+              </View>
               
               {/* Account Info Card */}
               <View className="w-full bg-card rounded-2xl p-5 gap-4">
@@ -109,13 +104,13 @@ export default function AccountScreen() {
                 </View>
               </View>
               <View>
-                <Pressable className='bg-primary' onPress={() => refetch()}><Text>Fetch</Text></Pressable>
-                <Text className='text-foreground-muted'>{`data: ${JSON.stringify(data)}, isLoading : ${isLoading}, isPending : ${isPending}, isErorr : ${isError}`}</Text>
+                <Pressable className='bg-primary' onPress={() => refetchSessionId()}><Text>Fetch Session</Text></Pressable>
+                <Text className='text-foreground-muted'>{`Session ID: ${sessionId}, Authorized: ${authorized}, Loading: ${isSessionLoading}`}</Text>
               </View>
 
               {/* Sign Out Button */}
               <Pressable 
-                onPress={handleSignOut}
+                onPress={onSignOut}
                 className="w-full bg-danger/10 py-3 rounded-xl items-center"
               >
                 <Text className="text-danger font-semibold">Sign Out</Text>
@@ -132,8 +127,7 @@ export default function AccountScreen() {
                     key={account.id + index} 
                     account={account} 
                     onPress={() => {
-                      setActiveAccount(account);
-                      setStorageItem("active_account_id", account.id);
+                      handleSignIn(account);
                     }}
                     onLongPress={() => openEditModal(account)}
                   />

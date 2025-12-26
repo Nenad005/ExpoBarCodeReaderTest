@@ -1,16 +1,18 @@
-import { Account } from "@/app/(tabs)/account";
+import { Account } from "@/hooks/session-menager"
+import { cn } from "@/utils/cn";
 import { getGradientFromSeed } from "@/utils/gradientsHelper";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, Text, View } from "react-native";
 
 type AccountAvatarProps = {
+    className: string;
     account: Account | null;
     onPress?: () => void;
     onLongPress?: () => void;
 };
 
-export default function AccountAvatar({ account, onPress, onLongPress }: AccountAvatarProps) {
+export default function AccountAvatar({ account, onPress, onLongPress, className = "" }: AccountAvatarProps) {
     const gradient = account ? getGradientFromSeed(account.email) : null;
 
     return (
@@ -18,7 +20,7 @@ export default function AccountAvatar({ account, onPress, onLongPress }: Account
             onPress={onPress} 
             onLongPress={onLongPress}
             delayLongPress={500}
-            className="flex items-center gap-2"
+            className={cn("flex items-center gap-2", className)}
         >
             {account && gradient ? (
                 <View className="rounded-full overflow-hidden flex justify-center items-center w-20 h-20">
