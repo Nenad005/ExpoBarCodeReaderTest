@@ -16,7 +16,7 @@ type EditAccountModalProps = {
     account: Account | null;
     onClose: () => void;
     onSaveAccount: (account: Account) => void;
-    onDeleteAccount: (accountId: string) => void;
+    onDeleteAccount: (email: string) => void;
 };
 
 export default function EditAccountModal({
@@ -81,7 +81,6 @@ export default function EditAccountModal({
         }
 
         const updatedAccount: Account = {
-            id: account.id,
             nickname: nickname.trim(),
             email: email.trim().toLowerCase(),
             password: password,
@@ -93,7 +92,7 @@ export default function EditAccountModal({
 
     const handleDelete = () => {
         if (!account) return;
-        onDeleteAccount(account.id);
+        onDeleteAccount(account.email);
         resetForm();
     };
 

@@ -10,7 +10,6 @@ import { getStorageItem, setStorageItem, removeStorageItem } from "@/utils/stora
  * 
  * **/
 export type Account = {
-  id: string;
   nickname: string;
   email: string;
   password: string; 
@@ -37,9 +36,11 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchSessionId = async (accountOverride?: Account | null) => {
+        if (!sessionId) setIsLoading(true);
         const currentAccount = accountOverride === undefined ? account : accountOverride;
         if (currentAccount == null){
             setSessionId(null)
+            setIsLoading(false);
             return
         }
         try {
@@ -51,6 +52,8 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
         }
         catch (error) {
             console.error("Failed to fetch session ID")
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -76,7 +79,7 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
             try {
                 const parsedAccount = JSON.parse(storedAccount);
                 setAccount(parsedAccount);
-                fetchSessionId(parsedAccount).finally(() => setIsLoading(false));
+                fetchSessionId(parsedAccount);
             } catch (error) {
                 console.error("Failed to parse stored account");
                 setIsLoading(false);

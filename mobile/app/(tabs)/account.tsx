@@ -39,26 +39,26 @@ export default function AccountScreen() {
 
   const handleEditAccount = (updatedAccount: Account) => {
     const updatedAccounts = accounts.map((acc) =>
-      acc.id === updatedAccount.id ? updatedAccount : acc
+      acc.email === updatedAccount.email ? updatedAccount : acc
     );
     setAccounts(updatedAccounts);
     setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
 
-    if (activeAccount?.id === updatedAccount.id) {
+    if (activeAccount?.email === updatedAccount.email) {
         handleSignIn(updatedAccount);
     }
   };
 
-  const handleDeleteAccount = (accountId: string) => {
-    const updatedAccounts = accounts.filter((acc) => acc.id !== accountId);
+  const handleDeleteAccount = (email: string) => {
+    const updatedAccounts = accounts.filter((acc) => acc.email !== email);
     setAccounts(updatedAccounts);
     setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
 
-    if (activeAccount?.id === accountId) {
+    if (activeAccount?.email === email) {
         handleSignOut();
     }
   };
@@ -96,16 +96,13 @@ export default function AccountScreen() {
                     <Text className="text-foreground-secondary">Email</Text>
                     <Text className="text-foreground font-medium">{activeAccount.email}</Text>
                   </View>
-                  
-                  <View className="flex-row justify-between items-center py-2">
-                    <Text className="text-foreground-secondary">Account ID</Text>
-                    <Text className="text-foreground-muted text-xs">{activeAccount.id}</Text>
-                  </View>
                 </View>
               </View>
               <View>
                 <Pressable className='bg-primary' onPress={() => refetchSessionId()}><Text>Fetch Session</Text></Pressable>
-                <Text className='text-foreground-muted'>{`Session ID: ${sessionId}, Authorized: ${authorized}, Loading: ${isSessionLoading}`}</Text>
+                <Text className='text-foreground-muted'>
+                  {isSessionLoading ? "Fetching session..." : `Session ID: ${sessionId}, Authorized: ${authorized}`}
+                </Text>
               </View>
 
               {/* Sign Out Button */}
@@ -124,7 +121,7 @@ export default function AccountScreen() {
               <View className='flex flex-row flex-wrap justify-center items-center gap-4'>
                 {accounts.map((account, index) => (
                   <AccountAvatar 
-                    key={account.id + index} 
+                    key={account.email + index} 
                     account={account} 
                     onPress={() => {
                       handleSignIn(account);

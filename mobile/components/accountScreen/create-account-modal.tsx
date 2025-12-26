@@ -65,7 +65,6 @@ export default function CreateAccountModal({
         }
 
         const newAccount: Account = {
-            id: Date.now().toString(),
             nickname: nickname.trim(),
             email: email.trim().toLowerCase(),
             password: password,

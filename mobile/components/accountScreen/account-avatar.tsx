@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, Text, View } from "react-native";
 
 type AccountAvatarProps = {
-    className: string;
+    className?: string;
     account: Account | null;
     onPress?: () => void;
     onLongPress?: () => void;
