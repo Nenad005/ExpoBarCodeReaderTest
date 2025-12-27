@@ -49,6 +49,7 @@ app.add_middleware(
         500: {"description": "Internal server error", "model": ErrorResponse},
     }
 )
+
 def get_php_session_id(upfit_account: UpfitAccount):
     """
     Retrieve PHP session ID by logging into Upfit.
