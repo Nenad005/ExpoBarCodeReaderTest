@@ -177,13 +177,13 @@ def get_php_session_id(upfit_account: UpfitAccount):
 
                     session = requests.Session()
                     response = session.get(url, headers=headers)
-                    if response.url != url:
-                        print(url)
-                        logger.warning("URL changed! You might be redirected to login page.")
-                        raise HTTPException(
-                            status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Ivalid session ID when fetching club name"
-                        )
+                    # if   != url:
+                    #     print(url)
+                    #     logger.warning("URL changed! You might be redirected to login page.")
+                    #     raise HTTPException(
+                    #         status_code=status.HTTP_401_UNAUTHORIZED,
+                    #         detail="Ivalid session ID when fetching club name"
+                    #     )
                     
                     soup = BeautifulSoup(response.text, 'html.parser')
                     club_name = soup.css.select_one(".page-title").find("strong").text
