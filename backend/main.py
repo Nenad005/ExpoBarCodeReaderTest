@@ -1,8 +1,10 @@
+from bs4 import BeautifulSoup
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import logging
 from fastapi.middleware.cors import CORSMiddleware
+from requests import session
 from models import *
 from sqlmodel import Session, create_engine
 
@@ -159,9 +161,29 @@ def get_php_session_id(upfit_account: UpfitAccount):
                         detail="Login failed - session not created. Check your credentials."
                     )
                 
+                if browser:
+                    try:
+                        browser.close()
+                    except Exception as e:
+                        logger.warning(f"Error closing browser: {e}")
+
                 try:
-                    page.wait_for_selector(".page-title", timeout=10000)
-                    club_name = page.locator(".page-title").first.locator("strong").first.text_content()
+                    url = "https://nonstopfitness.upfit.cloud/reception/dashboard"
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                        # You might need to copy the full 'Cookie' string from your browser if PHPSESSID alone isn't enough
+                        "Cookie": f"PHPSESSID={phpsessid}" 
+                    }
+
+                    response = session.get(url, headers=headers)
+                    if response.url != url:
+                        logger.warning("URL changed! You might be redirected to login page.")
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Ivalid session ID when fetching club name"
+                        )
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    club_name = soup.css.select_one(".page-title").find("strong").text
                 except Exception as e:
                     logger.warning("Couldn`t fetch club name from Dashboard !\n Exception: ", e)
                 
