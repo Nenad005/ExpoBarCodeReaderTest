@@ -51,7 +51,7 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
         }
         try {
             const response = await getPhpSessionIdPhpSessIdPost({body: {username: currentAccount.email, password: currentAccount.password}})
-            console.log(JSON.stringify(response))
+            // console.log(JSON.stringify(response))
             if (response.data?.PHPSESSID) {
                 let now = new Date()
                 setSessionId({

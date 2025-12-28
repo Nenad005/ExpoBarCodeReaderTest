@@ -38,15 +38,17 @@ export default function AccountScreen() {
   };
 
   const handleEditAccount = (updatedAccount: Account) => {
+    if (!editingAccount) return;
+    
     const updatedAccounts = accounts.map((acc) =>
-      acc.email === updatedAccount.email ? updatedAccount : acc
+      acc.email === editingAccount.email ? updatedAccount : acc
     );
     setAccounts(updatedAccounts);
     setStorageItem("accounts", JSON.stringify(updatedAccounts));
     setShowEditModal(false);
     setEditingAccount(null);
 
-    if (activeAccount?.email === updatedAccount.email) {
+    if (activeAccount?.email === editingAccount.email) {
         handleSignIn(updatedAccount);
     }
   };
