@@ -33,6 +33,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="reports"
+        options={{
+          title: 'Reports',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="document-attach" color={color} style={{ height: 28, width: 28 }} />,
+        }}
+      />
+      <Tabs.Screen
         name="account"
         options={{
           title: 'Account',

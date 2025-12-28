@@ -6,13 +6,13 @@ import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
-  const { refetchSessionId, isLoading } = useSession();
+  const { refetchSessionId, isLoading, session } = useSession();
 
   return (
     <View className="flex-1 bg-background">
       <Authorized>
         <View className="pt-16 px-5 pb-5">
-          <Text className="text-3xl font-bold text-danger">Welcome</Text>
+          <Text className="text-3xl font-bold text-danger">Welcome to {session?.club}</Text>
         </View>
         
         <View className="flex-1 px-5 gap-4">

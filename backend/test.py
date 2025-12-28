@@ -7,7 +7,7 @@ import json
 session = requests.Session()
 
 # 2. DEFINE THE URL AND HEADERS
-url = "https://nonstopfitness.upfit.cloud/reception/dashboard"
+url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs"
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -25,8 +25,6 @@ if response.url != url:
 
 # 4. PARSE DATA
 soup = BeautifulSoup(response.text, 'html.parser')
-
-print(soup.css.select_one(".page-title").find("strong").text)
 
 # DEBUG: Save the HTML to a file so you can inspect it manually if it fails
 with open("debug_page.html", "w", encoding="utf-8") as f:
