@@ -178,6 +178,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
                     session = requests.Session()
                     response = session.get(url, headers=headers)
                     if response.url != url:
+                        print(url)
                         logger.warning("URL changed! You might be redirected to login page.")
                         raise HTTPException(
                             status_code=status.HTTP_401_UNAUTHORIZED,
