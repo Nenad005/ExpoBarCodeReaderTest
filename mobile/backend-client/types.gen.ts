@@ -36,6 +36,10 @@ export type SessionResponse = {
      * Phpsessid
      */
     PHPSESSID: string;
+    /**
+     * Clubname
+     */
+    clubName: string | null;
 };
 
 /**
@@ -72,6 +76,20 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+};
+
+export type InitDbInitDbPostData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/init_db';
+};
+
+export type InitDbInitDbPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
 };
 
 export type GetPhpSessionIdPhpSessIdPostData = {

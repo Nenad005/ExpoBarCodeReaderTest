@@ -9,7 +9,7 @@ import { Pressable, Text, View } from 'react-native';
 
 
 export default function AccountScreen() {
-  const { account: activeAccount, handleSignIn, handleSignOut, refetchSessionId, sessionId, isLoading: isSessionLoading, authorized } = useSession();
+  const { account: activeAccount, handleSignIn, handleSignOut, refetchSessionId, session, isLoading: isSessionLoading, authorized } = useSession();
   const [accounts, setAccounts] = useState<Array<Account>>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -101,7 +101,7 @@ export default function AccountScreen() {
               <View>
                 <Pressable className='bg-primary' onPress={() => refetchSessionId()}><Text>Fetch Session</Text></Pressable>
                 <Text className='text-foreground-muted'>
-                  {isSessionLoading ? "Fetching session..." : `Session ID: ${sessionId}, Authorized: ${authorized}`}
+                  {isSessionLoading ? "Fetching session..." : `Session ID: ${session?.id},\n Club name: ${session?.club} Authorized: ${authorized}`}
                 </Text>
               </View>
 

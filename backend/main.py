@@ -160,6 +160,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
                     )
                 
                 try:
+                    page.wait_for_selector(".page-title", timeout=10000)
                     club_name = page.locator(".page-title").first.locator("strong").first.text_content()
                 except Exception as e:
                     logger.warning("Couldn`t fetch club name from Dashboard !")

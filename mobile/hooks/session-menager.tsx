@@ -15,8 +15,14 @@ export type Account = {
   password: string; 
 }
 
+type Session = {
+    id: string
+    club: string | null
+    created_at: string
+}
+
 type sessionContextType = {
-    sessionId: string | null,
+    session: Session | null,
     account: Account | null,
     authorized: boolean,
     isLoading: boolean,
@@ -31,12 +37,12 @@ export const useSession = () => useContext(sessionContext)
 
 export const SessionProvider = ({children} : {children : ReactNode}) => {
     const [account, setAccount] = useState<Account | null>(null)
-    const [sessionId, setSessionId] = useState<string | null>(null)
-    const authorized = !!account && !!sessionId
+    const [session, setSessionId] = useState<Session | null>(null)
+    const authorized = !!account && !!session
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchSessionId = async (accountOverride?: Account | null) => {
-        if (!sessionId) setIsLoading(true);
+        if (!session) setIsLoading(true);
         const currentAccount = accountOverride === undefined ? account : accountOverride;
         if (currentAccount == null){
             setSessionId(null)
@@ -45,8 +51,14 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
         }
         try {
             const response = await getPhpSessionIdPhpSessIdPost({body: {username: currentAccount.email, password: currentAccount.password}})
+            console.log(JSON.stringify(response))
             if (response.data?.PHPSESSID) {
-                setSessionId(response.data.PHPSESSID);
+                let now = new Date()
+                setSessionId({
+                    id: response.data.PHPSESSID,
+                    club: response.data.clubName,
+                    created_at: now.toISOString()
+                });
                 console.log("Session refreshed:", response.data.PHPSESSID);
             }
         }
@@ -90,7 +102,7 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
     }, []);
 
     const value = {
-        sessionId, account, authorized, handleSignIn, handleSignOut, isLoading, refetchSessionId
+        session, account, authorized, handleSignIn, handleSignOut, isLoading, refetchSessionId
     }
 
     return <sessionContext.Provider value={value}>

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses } from './types.gen';
+import type { GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -17,6 +17,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
      */
     meta?: Record<string, unknown>;
 };
+
+/**
+ * Init Db
+ */
+export const initDbInitDbPost = <ThrowOnError extends boolean = false>(options?: Options<InitDbInitDbPostData, ThrowOnError>) => (options?.client ?? client).post<InitDbInitDbPostResponses, unknown, ThrowOnError>({ url: '/init_db', ...options });
 
 /**
  * Get Php Session Id
