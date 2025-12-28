@@ -5,3 +5,5 @@ playwright
 sqlmodel
 pymysql
 cryptography
+requests
+beautifulsoup4
