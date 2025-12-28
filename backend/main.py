@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import *
 from sqlmodel import Session, create_engine
 import requests
+import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -171,24 +172,26 @@ def get_php_session_id(upfit_account: UpfitAccount):
                     url = "https://nonstopfitness.upfit.cloud/reception/dashboard"
                     headers = {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                        # You might need to copy the full 'Cookie' string from your browser if PHPSESSID alone isn't enough
                         "Cookie": f"PHPSESSID={phpsessid}" 
                     }
 
                     session = requests.Session()
-                    response = session.get(url, headers=headers)
-                    # if   != url:
-                    #     print(url)
-                    #     logger.warning("URL changed! You might be redirected to login page.")
-                    #     raise HTTPException(
-                    #         status_code=status.HTTP_401_UNAUTHORIZED,
-                    #         detail="Ivalid session ID when fetching club name"
-                    #     )
+                    response = session.get(url, headers=headers, allow_redirects=True, timeout=10)
+                    logger.info(f"Dashboard response status: {response.status_code}")
                     
                     soup = BeautifulSoup(response.text, 'html.parser')
-                    club_name = soup.css.select_one(".page-title").find("strong").text
+                    logger.warning(soup)
+                    page_title_elem = soup.select_one(".page-title")
+                    if page_title_elem:
+                        strong_elem = page_title_elem.find("strong")
+                        if strong_elem:
+                            club_name = strong_elem.text
+                        else:
+                            logger.warning("Strong element not found inside .page-title")
+                    else:
+                        logger.warning(f"Page title element not found. Response length: {len(response.text)}")
                 except Exception as e:
-                    logger.warning("Couldn`t fetch club name from Dashboard !\n Exception: ", e)
+                    logger.warning(f"Couldn't fetch club name from Dashboard! Exception: {e}")
                 
                 # print(page_title)
                 
