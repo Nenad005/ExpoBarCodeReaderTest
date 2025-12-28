@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { parse } from 'node-html-parser';
 
 type InventoryItem = {
@@ -115,46 +115,48 @@ export default function InventoryScreen() {
   return (
     <View className="flex-1 bg-background">
       <Authorized>
-        <View className="pt-16 px-5 pb-4 flex gap-1">
-          <Text className="text-3xl font-bold text-foreground">Club Inventory</Text>
-          <Text className='text-foreground-muted'>{`${session?.club}`}</Text>
-        </View>
-
-        {/* Search Bar with QR Scanner */}
-        <View className="flex-row px-5 mb-4 gap-3">
-          <View className="flex-1 flex-row items-center rounded-xl px-3 gap-2 h-11 bg-secondary">
-            <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
-            <TextInput
-              className="flex-1 text-base text-foreground"
-              placeholder="Search products or barcodes..."
-              placeholderTextColor={placeholderColor}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <Ionicons size={20} name="close-circle" color={placeholderColor} />
-              </Pressable>
-            )}
-          </View>
-
-          <Pressable 
-            className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" 
-            onPress={handleScanPress}
-          >
-            <Ionicons size={24} name="qr-code" color={tintColor} />
-          </Pressable>
-        </View>
-
-        {/* Inventory List */}
         <FlatList
-          data={filteredInventory}
           refreshing={isRefetching}
           onRefresh={refetch}
+          data={filteredInventory}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListHeaderComponent={
+            <View className="px-5">
+              <View className="pt-16 pb-4 flex gap-1">
+                <Text className="text-3xl font-bold text-foreground">Club Inventory</Text>
+                <Text className='text-foreground-muted'>{`${session?.club}`}</Text>
+              </View>
+
+              {/* Search Bar with QR Scanner */}
+              <View className="flex-row mb-4 gap-3">
+                <View className="flex-1 flex-row items-center rounded-xl px-3 gap-2 h-11 bg-secondary">
+                  <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
+                  <TextInput
+                    className="flex-1 text-base text-foreground"
+                    placeholder="Search products or barcodes..."
+                    placeholderTextColor={placeholderColor}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                  {searchQuery.length > 0 && (
+                    <Pressable onPress={() => setSearchQuery('')}>
+                      <Ionicons size={20} name="close-circle" color={placeholderColor} />
+                    </Pressable>
+                  )}
+                </View>
+
+                <Pressable 
+                  className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" 
+                  onPress={handleScanPress}
+                >
+                  <Ionicons size={24} name="qr-code" color={tintColor} />
+                </Pressable>
+              </View>
+            </View>
+          }
           renderItem={({ item }) => (
-            <View className="rounded-xl p-4 mb-3 bg-card">
+            <View className="mx-5 rounded-xl p-4 mb-3 bg-card">
               <View className="gap-1.5">
                 <Text className="font-semibold text-foreground">{item.name}</Text>
                 <Text className="text-xs text-foreground-muted">ID: {item.id}</Text>
@@ -176,7 +178,6 @@ export default function InventoryScreen() {
             </View>
           }
         />
-        {/* <Text className='text-foreground'>{JSON.stringify(items)}</Text> */}
       </Authorized>
 
       <UnAuthorized>

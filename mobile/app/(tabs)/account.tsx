@@ -94,7 +94,7 @@ export default function AccountScreen() {
                     <Text className="text-foreground font-medium">{activeAccount.nickname}</Text>
                   </View>
                   
-                  <View className="flex-row justify-between items-center py-2 border-b border-border">
+                  <View className="flex-row justify-between items-center pt-2">
                     <Text className="text-foreground-secondary">Email</Text>
                     <Text className="text-foreground font-medium">{activeAccount.email}</Text>
                   </View>
