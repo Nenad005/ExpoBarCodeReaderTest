@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import logging
 from fastapi.middleware.cors import CORSMiddleware
-from requests import session
 from models import *
 from sqlmodel import Session, create_engine
+import requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -175,6 +175,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
                         "Cookie": f"PHPSESSID={phpsessid}" 
                     }
 
+                    session = requests.Session()
                     response = session.get(url, headers=headers)
                     if response.url != url:
                         logger.warning("URL changed! You might be redirected to login page.")
@@ -182,6 +183,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
                             status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Ivalid session ID when fetching club name"
                         )
+                    
                     soup = BeautifulSoup(response.text, 'html.parser')
                     club_name = soup.css.select_one(".page-title").find("strong").text
                 except Exception as e:
