@@ -130,8 +130,8 @@ def get_php_session_id(upfit_account: UpfitAccount):
                 
                 # Check for login error indicators
                 try:
-                    error_element = page.locator(".error-message, .alert-danger, .login-error").first
-                    if error_element.is_visible(timeout=2000):
+                    error_element = page.locator(".alert-error").first
+                    if error_element.is_visible(timeout=1000):
                         error_text = error_element.text_content() or "Invalid credentials"
                         logger.warning(f"Login error detected: {error_text}")
                         raise HTTPException(
@@ -177,10 +177,14 @@ def get_php_session_id(upfit_account: UpfitAccount):
 
                     session = requests.Session()
                     response = session.get(url, headers=headers, allow_redirects=True, timeout=10)
-                    logger.info(f"Dashboard response status: {response.status_code}")
+
+                    if (response.url != url):
+                        raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Login failed, Check your credentials."
+                    )
                     
                     soup = BeautifulSoup(response.text, 'html.parser')
-                    logger.warning(soup)
                     page_title_elem = soup.select_one(".page-title")
                     if page_title_elem:
                         strong_elem = page_title_elem.find("strong")
@@ -191,7 +195,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
                     else:
                         logger.warning(f"Page title element not found. Response length: {len(response.text)}")
                 except Exception as e:
-                    logger.warning(f"Couldn't fetch club name from Dashboard! Exception: {e}")
+                    logger.error(f"Couldn't fetch club name from Dashboard! Exception: {e}")
                 
                 # print(page_title)
                 
