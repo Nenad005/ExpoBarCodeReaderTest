@@ -1,27 +1,20 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import logging
 from fastapi.middleware.cors import CORSMiddleware
+from models import *
+from sqlmodel import Session, create_engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+DATABASE_URL = "mysql+pymysql://root:AQTwxITImwhrEHLLLkQiIqIJkOPQUrMj@trolley.proxy.rlwy.net:35949/railway"
+engine = create_engine(DATABASE_URL)
 
-class UpfitAccount(BaseModel):
-    username: str = Field(..., min_length=1, description="Username for Upfit account")
-    password: str = Field(..., min_length=1, description="Password for Upfit account")
-
-
-class SessionResponse(BaseModel):
-    PHPSESSID: str
-    clubName: str | None
-
-
-class ErrorResponse(BaseModel):
-    detail: str
-    error_code: str
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 
 app = FastAPI(
@@ -38,6 +31,12 @@ app.add_middleware(
 )
 
 
+@app.post("/init_db")
+def init_db():
+    SQLModel.metadata.create_all(engine)
+    return {"message": "Database initialized"}
+
+
 @app.post(
     "/php_sess_id/",
     response_model=SessionResponse,
@@ -49,7 +48,6 @@ app.add_middleware(
         500: {"description": "Internal server error", "model": ErrorResponse},
     }
 )
-
 def get_php_session_id(upfit_account: UpfitAccount):
     """
     Retrieve PHP session ID by logging into Upfit.
@@ -63,7 +61,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
     try:
         with sync_playwright() as p:
             phpsessid = None
-            clubName = None
+            club_name = None
             
             try:
                 browser = p.chromium.launch(headless=True)
