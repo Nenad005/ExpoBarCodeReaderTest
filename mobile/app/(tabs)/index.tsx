@@ -13,7 +13,7 @@ export default function HomeScreen() {
     <View className="flex-1 bg-background">
       <Authorized>
         <View className="pt-16 px-5 pb-5">
-          <Text className="text-3xl font-bold text-danger">Welcome to {session?.club_name}</Text>
+          <Text className="text-3xl font-bold text-danger">Welcome to {session?.club_name} : {session?.club_id}</Text>
         </View>
         
         <View className="flex-1 px-5 gap-4">

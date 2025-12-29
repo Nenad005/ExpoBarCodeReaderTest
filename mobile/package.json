@@ -3,7 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "generate-client": "openapi-ts -i https://expobarcodereadertest-production.up.railway.app/openapi.json -o backend-client -c @hey-api/client-fetch",
+    "generate-client-dev": "openapi-ts -i http://127.0.0.1:8000/openapi.json -o backend-client -c @hey-api/client-fetch",
+    "generate-client-prod": "openapi-ts -i https://expobarcodereadertest-production.up.railway.app/openapi.json -o backend-client -c @hey-api/client-fetch",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
