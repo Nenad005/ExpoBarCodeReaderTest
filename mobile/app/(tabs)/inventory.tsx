@@ -21,11 +21,8 @@ type InventoryItem = {
 
 async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> {
   const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
-  
-  console.log(`[Inventory] Fetching with Session ID: '${sessionId}'`);
-  const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
-  console.log(`[Inventory] Cookie Header: '${cookieHeader}'`);
 
+  const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'omit',
@@ -45,10 +42,9 @@ async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> 
 
   const text = await response.text();
   const doc = parse(text);
-  console.log(text, doc.innerHTML)
+  // console.log(text, doc.innerHTML)
 
   const itemElements = doc.querySelectorAll(".odd.gradeX");
-  console.log(itemElements)
   const items: InventoryItem[] = itemElements.map((itemEl, index) => {
     const tds = itemEl.querySelectorAll("td");
     const attributes = tds.map((td) => td.textContent.trim());

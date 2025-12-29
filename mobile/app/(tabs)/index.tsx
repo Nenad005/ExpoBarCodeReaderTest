@@ -4,6 +4,7 @@ import { Text, View, Pressable } from 'react-native';
 import { useSession } from '@/hooks/session-menager';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 
 export default function HomeScreen() {
   const { refetchSessionId, isLoading, session } = useSession();
