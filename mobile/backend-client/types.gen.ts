@@ -40,6 +40,10 @@ export type SessionResponse = {
      * Clubname
      */
     clubName: string | null;
+    /**
+     * Clubid
+     */
+    clubId: number;
 };
 
 /**

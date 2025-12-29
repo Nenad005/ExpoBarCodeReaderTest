@@ -103,7 +103,7 @@ export default function AccountScreen() {
               <View>
                 <Pressable className='bg-primary' onPress={() => refetchSessionId()}><Text>Fetch Session</Text></Pressable>
                 <Text className='text-foreground-muted'>
-                  {isSessionLoading ? "Fetching session..." : `Session ID: ${session?.id},\n Club name: ${session?.club} Authorized: ${authorized}`}
+                  {isSessionLoading ? "Fetching session..." : `Session ID: ${session?.id},\n Club name: ${session?.club_name} Authorized: ${authorized}`}
                 </Text>
               </View>
 

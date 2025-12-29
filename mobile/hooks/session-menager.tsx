@@ -2,13 +2,6 @@ import { getPhpSessionIdPhpSessIdPost } from "@/backend-client";
 import { Children, createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { getStorageItem, setStorageItem, removeStorageItem } from "@/utils/storageItemsHelper";
 
-
-/** 
- * Kada korisnik udje na account stranicu tada samo 
- * Proveriti
- * 
- * 
- * **/
 export type Account = {
   nickname: string;
   email: string;
@@ -17,7 +10,8 @@ export type Account = {
 
 type Session = {
     id: string
-    club: string | null
+    club_name: string | null
+    club_id: number
     created_at: string
 }
 
@@ -116,7 +110,8 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
                 let now = new Date()
                 const newSession: Session = {
                     id: response.data.PHPSESSID,
-                    club: response.data.clubName,
+                    club_name: response.data.clubName,
+                    club_id: response.data.clubId,
                     created_at: now.toISOString()
                 };
                 setSessionId(newSession);

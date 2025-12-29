@@ -121,7 +121,7 @@ export default function InventoryScreen() {
             <View className="px-5">
               <View className="pt-16 pb-4 flex gap-1">
                 <Text className="text-3xl font-bold text-foreground">Club Inventory</Text>
-                <Text className='text-foreground-muted'>{`${session?.club}`}</Text>
+                <Text className='text-foreground-muted'>{`${session?.club_name}`}</Text>
               </View>
 
               {/* Search Bar with QR Scanner */}
