@@ -65,6 +65,7 @@ def get_php_session_id(upfit_account: UpfitAccount):
         with sync_playwright() as p:
             phpsessid = None
             club_name = None
+            club_id = None
             
             try:
                 browser = p.chromium.launch(headless=True)
@@ -185,13 +186,14 @@ def get_php_session_id(upfit_account: UpfitAccount):
                     )
                     
                     soup = BeautifulSoup(response.text, 'html.parser')
-                    page_title_elem = soup.select_one(".page-title")
+                    page_title_elem = soup.select_one("#club_scope")
                     if page_title_elem:
-                        strong_elem = page_title_elem.find("strong")
-                        if strong_elem:
-                            club_name = strong_elem.text
+                        option_el = page_title_elem.find("option")
+                        if option_el:
+                            club_name = option_el.text.strip()
+                            club_id = option_el['value']
                         else:
-                            logger.warning("Strong element not found inside .page-title")
+                            logger.warning("Option element not found inside #club_scope")
                     else:
                         logger.warning(f"Page title element not found. Response length: {len(response.text)}")
                 except Exception as e:
@@ -210,7 +212,8 @@ def get_php_session_id(upfit_account: UpfitAccount):
             status_code=status.HTTP_200_OK,
             content={
                 "PHPSESSID": phpsessid,
-                "clubName" : club_name
+                "clubName" : club_name,
+                "clubId" : club_id
             }
         )
         
