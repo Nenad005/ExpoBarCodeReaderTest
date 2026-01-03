@@ -1,4 +1,4 @@
-import { getPhpSessionIdPhpSessIdPost, upsertClubClubsUpdatePost } from "@/backend-client";
+import { getPhpSessionIdPhpSessIdPost, upsertWarehouseWarehousesUpdatePost } from "@/backend-client";
 import { Children, createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { getStorageItem, setStorageItem, removeStorageItem } from "@/utils/storageItemsHelper";
 
@@ -15,12 +15,11 @@ type Session = {
     created_at: string
 }
 
-type Club = {
+type Warehouse = {
     id: string,
     name: string,
 }
 
-// Map of account key (email:password) -> session data
 type AccountSessionsMap = Record<string, Session>;
 
 type sessionContextType = {
@@ -37,12 +36,10 @@ const sessionContext = createContext<sessionContextType>({} as sessionContextTyp
 
 export const useSession = () => useContext(sessionContext)
 
-// Helper to create a unique key for an account (email + password combination)
 const getAccountKey = (email: string, password: string): string => {
     return `${email}:${password}`;
 };
 
-// Helper to get stored sessions map
 const getStoredSessions = (): AccountSessionsMap => {
     const stored = getStorageItem('accountSessions');
     if (stored) {
@@ -55,27 +52,23 @@ const getStoredSessions = (): AccountSessionsMap => {
     return {};
 };
 
-// Helper to save session for a specific account
 const saveSessionForAccount = (email: string, password: string, session: Session) => {
     const sessions = getStoredSessions();
     sessions[getAccountKey(email, password)] = session;
     setStorageItem('accountSessions', JSON.stringify(sessions));
 };
 
-// Helper to get session for a specific account
 const getSessionForAccount = (email: string, password: string): Session | null => {
     const sessions = getStoredSessions();
     return sessions[getAccountKey(email, password)] || null;
 };
 
-// Helper to remove session for a specific account
 const removeSessionForAccount = (email: string, password: string) => {
     const sessions = getStoredSessions();
     delete sessions[getAccountKey(email, password)];
     setStorageItem('accountSessions', JSON.stringify(sessions));
 };
 
-// Helper to validate a session by checking if it's still active
 const validateSession = async (sessionId: string): Promise<boolean> => {
     try {
         const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
@@ -87,7 +80,6 @@ const validateSession = async (sessionId: string): Promise<boolean> => {
                 "Cookie": cookieHeader,
             }
         });
-        // If we get redirected away from dashboard, session is invalid
         return res.url === "https://nonstopfitness.upfit.cloud/reception/dashboard";
     } catch (error) {
         console.error("Session validation failed:", error);
@@ -95,8 +87,8 @@ const validateSession = async (sessionId: string): Promise<boolean> => {
     }
 };
 
-async function upsert_club(club: Club){
-    let res = await upsertClubClubsUpdatePost({body: club})
+async function upsert_club(club: Warehouse){
+    let res = await upsertWarehouseWarehousesUpdatePost({body: club})
 }
 
 export const SessionProvider = ({children} : {children : ReactNode}) => {
@@ -141,10 +133,8 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
         setStorageItem('account', JSON.stringify(account));
         setIsLoading(true);
         
-        // Try to load existing session for this account first
         const storedSession = getSessionForAccount(account.email, account.password);
         if (storedSession) {
-            // Validate the stored session before using it
             const isValid = await validateSession(storedSession.id);
             if (isValid) {
                 setSessionId(storedSession);
@@ -152,12 +142,10 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
                 setIsLoading(false);
             } else {
                 console.log("Stored session expired, fetching new one for:", account.email);
-                // Remove invalid session and fetch a new one
                 removeSessionForAccount(account.email, account.password);
                 await fetchSessionId(account);
             }
         } else {
-            // No stored session, fetch a new one
             await fetchSessionId(account);
         }
     }
@@ -166,7 +154,6 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
         setAccount(null)
         setSessionId(null)
         removeStorageItem('account');
-        // Note: We keep the session in storage so it can be reused if user signs back in
     }
 
     const refetchSessionId = async () => {
@@ -181,10 +168,8 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
                     const parsedAccount = JSON.parse(storedAccount);
                     setAccount(parsedAccount);
                     
-                    // Try to load stored session for this account instead of fetching
                     const storedSession = getSessionForAccount(parsedAccount.email, parsedAccount.password);
                     if (storedSession) {
-                        // Validate the stored session before using it
                         const isValid = await validateSession(storedSession.id);
                         if (isValid) {
                             setSessionId(storedSession);
@@ -192,12 +177,10 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
                             setIsLoading(false);
                         } else {
                             console.log("Stored session expired, fetching new one for:", parsedAccount.email);
-                            // Remove invalid session and fetch a new one
                             removeSessionForAccount(parsedAccount.email, parsedAccount.password);
                             await fetchSessionId(parsedAccount);
                         }
                     } else {
-                        // No stored session, fetch a new one
                         await fetchSessionId(parsedAccount);
                     }
                 } catch (error) {

@@ -5,38 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * Club
- */
-export type Club = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-};
-
-/**
- * ClubItem
- */
-export type ClubItem = {
-    /**
-     * Club Id
-     */
-    club_id: string;
-    /**
-     * Product Id
-     */
-    product_id: string;
-    /**
-     * Quantity
-     */
-    quantity: string;
-};
-
-/**
  * ErrorResponse
  */
 export type ErrorResponse = {
@@ -132,6 +100,38 @@ export type ValidationError = {
     type: string;
 };
 
+/**
+ * Warehouse
+ */
+export type Warehouse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * WarehouseItem
+ */
+export type WarehouseItem = {
+    /**
+     * Warehouse Id
+     */
+    warehouse_id: string;
+    /**
+     * Product Id
+     */
+    product_id: string;
+    /**
+     * Quantity
+     */
+    quantity: string;
+};
+
 export type InitDbInitDbPostData = {
     body?: never;
     path?: never;
@@ -172,49 +172,49 @@ export type BulkUpsertProductsProductsUpdateManyPostResponses = {
     200: unknown;
 };
 
-export type UpsertClubClubsUpdatePostData = {
-    body: Club;
+export type UpsertWarehouseWarehousesUpdatePostData = {
+    body: Warehouse;
     path?: never;
     query?: never;
-    url: '/clubs/update';
+    url: '/warehouses/update';
 };
 
-export type UpsertClubClubsUpdatePostErrors = {
+export type UpsertWarehouseWarehousesUpdatePostErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type UpsertClubClubsUpdatePostError = UpsertClubClubsUpdatePostErrors[keyof UpsertClubClubsUpdatePostErrors];
+export type UpsertWarehouseWarehousesUpdatePostError = UpsertWarehouseWarehousesUpdatePostErrors[keyof UpsertWarehouseWarehousesUpdatePostErrors];
 
-export type UpsertClubClubsUpdatePostResponses = {
+export type UpsertWarehouseWarehousesUpdatePostResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type UpsertClubItemsClubItemsUpdateManyPostData = {
+export type UpsertWarehouseItemsWarehouseItemsUpdateManyPostData = {
     /**
-     * Club Items
+     * Warehouse Items
      */
-    body: Array<ClubItem>;
+    body: Array<WarehouseItem>;
     path?: never;
     query?: never;
-    url: '/club_items/update_many';
+    url: '/warehouse_items/update_many';
 };
 
-export type UpsertClubItemsClubItemsUpdateManyPostErrors = {
+export type UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type UpsertClubItemsClubItemsUpdateManyPostError = UpsertClubItemsClubItemsUpdateManyPostErrors[keyof UpsertClubItemsClubItemsUpdateManyPostErrors];
+export type UpsertWarehouseItemsWarehouseItemsUpdateManyPostError = UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors[keyof UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors];
 
-export type UpsertClubItemsClubItemsUpdateManyPostResponses = {
+export type UpsertWarehouseItemsWarehouseItemsUpdateManyPostResponses = {
     /**
      * Successful Response
      */

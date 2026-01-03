@@ -62,6 +62,17 @@ def upsert(session: Session, model: type[SQLModel], objects: list[SQLModel] | SQ
     session.exec(do_update_stmt)
     session.commit()
 
+def insert_if_not_exists_bulk(session: Session, model: type[SQLModel], objects: List[SQLModel]):
+    if not objects:
+        return
+
+    data = [obj.model_dump() for obj in objects]
+    stmt = insert(model).values(data)
+    stmt = stmt.prefix_with("IGNORE")
+
+    session.exec(stmt)
+    session.commit()
+
 @app.post(
     "/products/update_many"
 )
@@ -73,12 +84,6 @@ def bulk_upsert_products(products: list[Product], session: Session = Depends(get
 )
 def upsert_warehouse(warehouse: Warehouse, session: Session = Depends(get_session)):
     upsert(session, Warehouse, warehouse)
-
-@app.post(
-    "/warehouse_items/update_many"
-)
-def upsert_warehouse_items(warehouse_items: list[WarehouseItem], session: Session = Depends(get_session)):
-    upsert(session, WarehouseItem, warehouse_items)
 
 @app.post(
     "/php_sess_id/",

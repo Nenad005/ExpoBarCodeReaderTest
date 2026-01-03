@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { BulkUpsertProductsProductsUpdateManyPostData, BulkUpsertProductsProductsUpdateManyPostErrors, BulkUpsertProductsProductsUpdateManyPostResponses, GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses, UpsertClubClubsUpdatePostData, UpsertClubClubsUpdatePostErrors, UpsertClubClubsUpdatePostResponses, UpsertClubItemsClubItemsUpdateManyPostData, UpsertClubItemsClubItemsUpdateManyPostErrors, UpsertClubItemsClubItemsUpdateManyPostResponses } from './types.gen';
+import type { BulkUpsertProductsProductsUpdateManyPostData, BulkUpsertProductsProductsUpdateManyPostErrors, BulkUpsertProductsProductsUpdateManyPostResponses, GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses, UpsertWarehouseItemsWarehouseItemsUpdateManyPostData, UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors, UpsertWarehouseItemsWarehouseItemsUpdateManyPostResponses, UpsertWarehouseWarehousesUpdatePostData, UpsertWarehouseWarehousesUpdatePostErrors, UpsertWarehouseWarehousesUpdatePostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -36,10 +36,10 @@ export const bulkUpsertProductsProductsUpdateManyPost = <ThrowOnError extends bo
 });
 
 /**
- * Upsert Club
+ * Upsert Warehouse
  */
-export const upsertClubClubsUpdatePost = <ThrowOnError extends boolean = false>(options: Options<UpsertClubClubsUpdatePostData, ThrowOnError>) => (options.client ?? client).post<UpsertClubClubsUpdatePostResponses, UpsertClubClubsUpdatePostErrors, ThrowOnError>({
-    url: '/clubs/update',
+export const upsertWarehouseWarehousesUpdatePost = <ThrowOnError extends boolean = false>(options: Options<UpsertWarehouseWarehousesUpdatePostData, ThrowOnError>) => (options.client ?? client).post<UpsertWarehouseWarehousesUpdatePostResponses, UpsertWarehouseWarehousesUpdatePostErrors, ThrowOnError>({
+    url: '/warehouses/update',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -48,10 +48,10 @@ export const upsertClubClubsUpdatePost = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * Upsert Club Items
+ * Upsert Warehouse Items
  */
-export const upsertClubItemsClubItemsUpdateManyPost = <ThrowOnError extends boolean = false>(options: Options<UpsertClubItemsClubItemsUpdateManyPostData, ThrowOnError>) => (options.client ?? client).post<UpsertClubItemsClubItemsUpdateManyPostResponses, UpsertClubItemsClubItemsUpdateManyPostErrors, ThrowOnError>({
-    url: '/club_items/update_many',
+export const upsertWarehouseItemsWarehouseItemsUpdateManyPost = <ThrowOnError extends boolean = false>(options: Options<UpsertWarehouseItemsWarehouseItemsUpdateManyPostData, ThrowOnError>) => (options.client ?? client).post<UpsertWarehouseItemsWarehouseItemsUpdateManyPostResponses, UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors, ThrowOnError>({
+    url: '/warehouse_items/update_many',
     ...options,
     headers: {
         'Content-Type': 'application/json',

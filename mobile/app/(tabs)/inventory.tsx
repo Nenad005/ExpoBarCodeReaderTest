@@ -10,12 +10,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { parse } from 'node-html-parser';
+import { bulkUpsertProductsProductsUpdateManyPost } from '@/backend-client';
 
 type InventoryItem = {
   id: string;
   name: string;
   barcode: string;
-  location: 'shelf' | 'storage';
+  price: number;
   quantity: number;
 };
 
@@ -51,12 +52,12 @@ async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> 
       id: attributes[0] ?? String(index),
       name: attributes[1] ?? '',
       barcode: '',
-      location: 'shelf' as const,
+      price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
       quantity: parseInt(attributes[2] ?? '0', 10),
     };
   });
 
-  console.log(items)
+  // console.log(items)
 
   return items;
 }
@@ -90,6 +91,21 @@ export default function InventoryScreen() {
       setSearchQuery(params.scanned as string);
     }
   }, [params.scanned]);
+
+  useEffect(() => {
+    if (!isLoading && items) {
+      const products = items.map((item, index) => {
+        return {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+        }
+      })
+
+      console.log("upserting products")
+      bulkUpsertProductsProductsUpdateManyPost({body: products})
+    }
+  }, [isLoading, items])
 
   const inventoryData = items ?? [];
   
@@ -159,10 +175,11 @@ export default function InventoryScreen() {
                 <View className="flex-row items-center gap-3 mt-1">
                   <View className="px-2 py-1 rounded-md bg-primary/15">
                     <Text className="text-xs font-medium text-primary">
-                      {item.location === 'shelf' ? 'On Shelf' : 'Storage'}
+                      In Club
                     </Text>
                   </View>
                   <Text className="text-sm text-foreground-secondary">Qty: {item.quantity}</Text>
+                  <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.price}.00 RSD</Text>
                 </View>
               </View>
             </View>
