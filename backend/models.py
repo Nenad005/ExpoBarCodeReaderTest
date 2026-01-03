@@ -9,8 +9,8 @@ class UpfitAccount(BaseModel):
 
 class SessionResponse(BaseModel):
     PHPSESSID: str
-    clubName: str | None
-    clubId: int
+    clubName: str
+    clubId: str
 
 
 class ErrorResponse(BaseModel):
