@@ -19,16 +19,17 @@ class ErrorResponse(BaseModel):
 
 ###           DataBase Models           ### 
 
-class Warehouse(SQLModel, table=True):
-    __tablename__ = "warehouses"
+class Club(SQLModel, table=True):
+    __tablename__ = "clubs"
     id: str = Field(primary_key=True)
     name: str
-    items: List["WarehouseItem"] = Relationship(back_populates="warehouse_link")
+    items: List["ClubItem"] = Relationship(back_populates="club_link")
 
 class Product(SQLModel, table=True):
     __tablename__ = "products"
     id: str = Field(primary_key=True)
     name: str
+    price: Optional[int]
 
 class ReportType(SQLModel, table=True):
     __tablename__ = "report_types"
@@ -38,7 +39,7 @@ class ReportType(SQLModel, table=True):
 class Report(SQLModel, table=True):
     __tablename__ = "reports"
     id: str = Field(primary_key=True)
-    warehouse_id: str = Field(foreign_key="warehouses.id")
+    club_id: str = Field(foreign_key="clubs.id")
     type_id: str = Field(foreign_key="report_types.id")
     date: str 
     note: Optional[str] = None
@@ -51,18 +52,18 @@ class ReportItem(SQLModel, table=True):
     product_id: str = Field(foreign_key="products.id", primary_key=True)
     
     on_shelf: int
-    in_warehouse: int
+    in_club: int
 
     report_link: "Report" = Relationship(back_populates="items")
     product_link: "Product" = Relationship()
 
-class WarehouseItem(SQLModel, table=True):
-    __tablename__ = "warehouse_items"
+class ClubItem(SQLModel, table=True):
+    __tablename__ = "club_items"
 
-    warehouse_id: str = Field(foreign_key="warehouses.id", primary_key=True)
+    club_id: str = Field(foreign_key="clubs.id", primary_key=True)
     product_id: str = Field(foreign_key="products.id", primary_key=True)
     
     quantity: str
 
-    warehouse_link: "Warehouse" = Relationship(back_populates="items")
+    club_link: "Club" = Relationship(back_populates="items")
     product_link: "Product" = Relationship()

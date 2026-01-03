@@ -1,13 +1,13 @@
 from bs4 import BeautifulSoup
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
 from sqlmodel import Session, create_engine
+from sqlalchemy.dialects.mysql import insert
 import requests
-import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,12 +33,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.post("/init_db")
 def init_db():
     SQLModel.metadata.create_all(engine)
     return {"message": "Database initialized"}
 
+def upsert(session: Session, model: type[SQLModel], objects: list[SQLModel] | SQLModel |  None = None):
+    if not objects:
+        return
+    
+    if isinstance(objects, list[SQLModel]):
+        data = [obj.model_dump() for obj in objects] 
+    elif isinstance(objects, SQLModel): 
+        data = objects.model_dump()
+    else:
+        return
+
+    stmt = insert(model).values(data)
+
+    update_dict = {
+        col.name: stmt.inserted[col.name]
+        for col in model.__table__.columns
+        if col.name != "id"
+    }
+
+    do_update_stmt = stmt.on_duplicate_key_update(update_dict)
+
+    session.exec(do_update_stmt)
+    session.commit()
+
+@app.post(
+    "/products/update_many"
+)
+def bulk_upsert_products(products: list[Product], session: Session = Depends(get_session)):
+    upsert(session, Product, products)
+
+@app.post(
+    "/clubs/update"
+)
+def upsert_club(club: Club, session: Session = Depends(get_session)):
+    upsert(session, Club, club)
+
+@app.post(
+    "/club_items/update_many"
+)
+def upsert_club_items(club_items: list[ClubItem], session: Session = Depends(get_session)):
+    upsert(session, ClubItem, club_items)
 
 @app.post(
     "/php_sess_id/",
