@@ -42,7 +42,7 @@ def upsert(session: Session, model: type[SQLModel], objects: list[SQLModel] | SQ
     if not objects:
         return
     
-    if isinstance(objects, list[SQLModel]):
+    if isinstance(objects, list):
         data = [obj.model_dump() for obj in objects] 
     elif isinstance(objects, SQLModel): 
         data = objects.model_dump()
