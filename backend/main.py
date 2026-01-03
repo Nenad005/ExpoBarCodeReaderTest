@@ -69,16 +69,16 @@ def bulk_upsert_products(products: list[Product], session: Session = Depends(get
     upsert(session, Product, products)
 
 @app.post(
-    "/clubs/update"
+    "/warehouses/update"
 )
-def upsert_club(club: Club, session: Session = Depends(get_session)):
-    upsert(session, Club, club)
+def upsert_warehouse(warehouse: Warehouse, session: Session = Depends(get_session)):
+    upsert(session, Warehouse, warehouse)
 
 @app.post(
-    "/club_items/update_many"
+    "/warehouse_items/update_many"
 )
-def upsert_club_items(club_items: list[ClubItem], session: Session = Depends(get_session)):
-    upsert(session, ClubItem, club_items)
+def upsert_warehouse_items(warehouse_items: list[WarehouseItem], session: Session = Depends(get_session)):
+    upsert(session, WarehouseItem, warehouse_items)
 
 @app.post(
     "/php_sess_id/",
