@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses } from './types.gen';
+import type { BulkUpsertProductsProductsUpdateManyPostData, BulkUpsertProductsProductsUpdateManyPostErrors, BulkUpsertProductsProductsUpdateManyPostResponses, GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses, UpsertClubClubsUpdatePostData, UpsertClubClubsUpdatePostErrors, UpsertClubClubsUpdatePostResponses, UpsertClubItemsClubItemsUpdateManyPostData, UpsertClubItemsClubItemsUpdateManyPostErrors, UpsertClubItemsClubItemsUpdateManyPostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -22,6 +22,42 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Init Db
  */
 export const initDbInitDbPost = <ThrowOnError extends boolean = false>(options?: Options<InitDbInitDbPostData, ThrowOnError>) => (options?.client ?? client).post<InitDbInitDbPostResponses, unknown, ThrowOnError>({ url: '/init_db', ...options });
+
+/**
+ * Bulk Upsert Products
+ */
+export const bulkUpsertProductsProductsUpdateManyPost = <ThrowOnError extends boolean = false>(options: Options<BulkUpsertProductsProductsUpdateManyPostData, ThrowOnError>) => (options.client ?? client).post<BulkUpsertProductsProductsUpdateManyPostResponses, BulkUpsertProductsProductsUpdateManyPostErrors, ThrowOnError>({
+    url: '/products/update_many',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Upsert Club
+ */
+export const upsertClubClubsUpdatePost = <ThrowOnError extends boolean = false>(options: Options<UpsertClubClubsUpdatePostData, ThrowOnError>) => (options.client ?? client).post<UpsertClubClubsUpdatePostResponses, UpsertClubClubsUpdatePostErrors, ThrowOnError>({
+    url: '/clubs/update',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Upsert Club Items
+ */
+export const upsertClubItemsClubItemsUpdateManyPost = <ThrowOnError extends boolean = false>(options: Options<UpsertClubItemsClubItemsUpdateManyPostData, ThrowOnError>) => (options.client ?? client).post<UpsertClubItemsClubItemsUpdateManyPostResponses, UpsertClubItemsClubItemsUpdateManyPostErrors, ThrowOnError>({
+    url: '/club_items/update_many',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Php Session Id

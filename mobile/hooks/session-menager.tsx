@@ -1,4 +1,4 @@
-import { getPhpSessionIdPhpSessIdPost } from "@/backend-client";
+import { getPhpSessionIdPhpSessIdPost, upsertClubClubsUpdatePost } from "@/backend-client";
 import { Children, createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { getStorageItem, setStorageItem, removeStorageItem } from "@/utils/storageItemsHelper";
 
@@ -11,8 +11,13 @@ export type Account = {
 type Session = {
     id: string
     club_name: string | null
-    club_id: number
+    club_id: string
     created_at: string
+}
+
+type Club = {
+    id: string,
+    name: string,
 }
 
 // Map of account key (email:password) -> session data
@@ -90,6 +95,10 @@ const validateSession = async (sessionId: string): Promise<boolean> => {
     }
 };
 
+async function upsert_club(club: Club){
+    let res = await upsertClubClubsUpdatePost({body: club})
+}
+
 export const SessionProvider = ({children} : {children : ReactNode}) => {
     const [account, setAccount] = useState<Account | null>(null)
     const [session, setSessionId] = useState<Session | null>(null)
@@ -115,7 +124,7 @@ export const SessionProvider = ({children} : {children : ReactNode}) => {
                     created_at: now.toISOString()
                 };
                 setSessionId(newSession);
-                // Save the session for this specific account
+                await upsert_club({id: response.data.clubId, name: response.data.clubName});
                 saveSessionForAccount(currentAccount.email, currentAccount.password, newSession);
                 console.log("Session refreshed:", response.data.PHPSESSID);
             }

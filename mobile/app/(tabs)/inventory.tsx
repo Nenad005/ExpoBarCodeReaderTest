@@ -42,7 +42,6 @@ async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> 
 
   const text = await response.text();
   const doc = parse(text);
-  // console.log(text, doc.innerHTML)
 
   const itemElements = doc.querySelectorAll(".odd.gradeX");
   const items: InventoryItem[] = itemElements.map((itemEl, index) => {
@@ -51,11 +50,13 @@ async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> 
     return {
       id: attributes[0] ?? String(index),
       name: attributes[1] ?? '',
-      barcode: '', // Add barcode if available in different column
+      barcode: '',
       location: 'shelf' as const,
       quantity: parseInt(attributes[2] ?? '0', 10),
     };
   });
+
+  console.log(items)
 
   return items;
 }
@@ -84,7 +85,6 @@ export default function InventoryScreen() {
     }
   }, [items, error]);
 
-  // Handle scanned barcode from params
   useEffect(() => {
     if (params.scanned) {
       setSearchQuery(params.scanned as string);
