@@ -86,6 +86,12 @@ def upsert_warehouse(warehouse: Warehouse, session: Session = Depends(get_sessio
     upsert(session, Warehouse, warehouse)
 
 @app.post(
+    "/warehouse_items/update"
+)
+def upsert_warehouse_item(warehouse_item: WarehouseItem, session: Session = Depends(get_session)):
+    upsert(session, WarehouseItem, warehouse_item)
+
+@app.post(
     "/php_sess_id/",
     response_model=SessionResponse,
     responses={

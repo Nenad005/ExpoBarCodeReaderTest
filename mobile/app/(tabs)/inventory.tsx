@@ -21,6 +21,7 @@ type InventoryItem = {
 };
 
 async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> {
+  console.log("Fething inventory items...")
   const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
 
   const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
