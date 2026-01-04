@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, create_engine, select
 from sqlalchemy.dialects.mysql import insert
 import requests
 
@@ -90,6 +90,15 @@ def upsert_warehouse(warehouse: Warehouse, session: Session = Depends(get_sessio
 )
 def upsert_warehouse_item(warehouse_item: WarehouseItem, session: Session = Depends(get_session)):
     upsert(session, WarehouseItem, warehouse_item)
+
+@app.get(
+    "/warehouse_items"
+)
+def get_warehouse_items(warehouse_id: str, session: Session = Depends(get_session)):
+    query = select(WarehouseItem).where(WarehouseItem.warehouse_id == warehouse_id)
+    results = session.exec(query).all()
+
+    return results
 
 @app.post(
     "/php_sess_id/",
