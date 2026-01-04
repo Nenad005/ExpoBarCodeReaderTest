@@ -15,7 +15,7 @@ import { bulkUpsertProductsProductsUpdateManyPost } from '@/backend-client';
 type InventoryItem = {
   id: string;
   name: string;
-  barcode: string;
+  barcode: string | null;
   price: number;
   quantity: number;
 };
@@ -52,7 +52,7 @@ async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> 
     return {
       id: attributes[0] ?? String(index),
       name: attributes[1] ?? '',
-      barcode: '',
+      barcode: null,
       price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
       quantity: parseInt(attributes[2] ?? '0', 10),
     };
@@ -100,6 +100,7 @@ export default function InventoryScreen() {
           id: item.id,
           name: item.name,
           price: item.price,
+          barcode: item.barcode
         }
       })
 
@@ -113,7 +114,7 @@ export default function InventoryScreen() {
   const filteredInventory = inventoryData.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.barcode.includes(searchQuery);
+      (item.barcode && item.barcode.includes(searchQuery));
     return matchesSearch;
   });
 

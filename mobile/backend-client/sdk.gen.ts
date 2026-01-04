@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { BulkUpsertProductsProductsUpdateManyPostData, BulkUpsertProductsProductsUpdateManyPostErrors, BulkUpsertProductsProductsUpdateManyPostResponses, GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses, UpsertWarehouseItemsWarehouseItemsUpdateManyPostData, UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors, UpsertWarehouseItemsWarehouseItemsUpdateManyPostResponses, UpsertWarehouseWarehousesUpdatePostData, UpsertWarehouseWarehousesUpdatePostErrors, UpsertWarehouseWarehousesUpdatePostResponses } from './types.gen';
+import type { BulkUpsertProductsProductsUpdateManyPostData, BulkUpsertProductsProductsUpdateManyPostErrors, BulkUpsertProductsProductsUpdateManyPostResponses, GetPhpSessionIdPhpSessIdPostData, GetPhpSessionIdPhpSessIdPostErrors, GetPhpSessionIdPhpSessIdPostResponses, GetWarehouseItemsWarehouseItemsGetData, GetWarehouseItemsWarehouseItemsGetErrors, GetWarehouseItemsWarehouseItemsGetResponses, HealthCheckHealthGetData, HealthCheckHealthGetResponses, InitDbInitDbPostData, InitDbInitDbPostResponses, UpsertWarehouseItemWarehouseItemsUpdatePostData, UpsertWarehouseItemWarehouseItemsUpdatePostErrors, UpsertWarehouseItemWarehouseItemsUpdatePostResponses, UpsertWarehouseWarehousesUpdatePostData, UpsertWarehouseWarehousesUpdatePostErrors, UpsertWarehouseWarehousesUpdatePostResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -48,16 +48,21 @@ export const upsertWarehouseWarehousesUpdatePost = <ThrowOnError extends boolean
 });
 
 /**
- * Upsert Warehouse Items
+ * Upsert Warehouse Item
  */
-export const upsertWarehouseItemsWarehouseItemsUpdateManyPost = <ThrowOnError extends boolean = false>(options: Options<UpsertWarehouseItemsWarehouseItemsUpdateManyPostData, ThrowOnError>) => (options.client ?? client).post<UpsertWarehouseItemsWarehouseItemsUpdateManyPostResponses, UpsertWarehouseItemsWarehouseItemsUpdateManyPostErrors, ThrowOnError>({
-    url: '/warehouse_items/update_many',
+export const upsertWarehouseItemWarehouseItemsUpdatePost = <ThrowOnError extends boolean = false>(options: Options<UpsertWarehouseItemWarehouseItemsUpdatePostData, ThrowOnError>) => (options.client ?? client).post<UpsertWarehouseItemWarehouseItemsUpdatePostResponses, UpsertWarehouseItemWarehouseItemsUpdatePostErrors, ThrowOnError>({
+    url: '/warehouse_items/update',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
 });
+
+/**
+ * Get Warehouse Items
+ */
+export const getWarehouseItemsWarehouseItemsGet = <ThrowOnError extends boolean = false>(options: Options<GetWarehouseItemsWarehouseItemsGetData, ThrowOnError>) => (options.client ?? client).get<GetWarehouseItemsWarehouseItemsGetResponses, GetWarehouseItemsWarehouseItemsGetErrors, ThrowOnError>({ url: '/warehouse_items', ...options });
 
 /**
  * Get Php Session Id

@@ -29,7 +29,7 @@ class Product(SQLModel, table=True):
     __tablename__ = "products"
     id: str = Field(primary_key=True)
     name: str
-    barcode: str
+    barcode: Optional[str]
     price: Optional[int]
 
 class ReportType(SQLModel, table=True):
