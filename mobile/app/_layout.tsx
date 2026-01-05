@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { SessionProvider } from "@/hooks/session-menager";
+import { InventoryProvider } from "@/hooks/inventory-menager";
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -18,15 +19,17 @@ export default function RootLayout() {
 
   return (
     <SessionProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="scan" options={{ presentation: 'modal', title: 'Scan Barcode' }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </QueryClientProvider>
+      <InventoryProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="scan" options={{ presentation: 'modal', title: 'Scan Barcode' }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </QueryClientProvider>
+      </InventoryProvider>
     </SessionProvider>
   );
 }

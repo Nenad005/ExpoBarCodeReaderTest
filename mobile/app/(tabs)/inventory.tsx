@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { parse } from 'node-html-parser';
 import { bulkUpsertProductsProductsUpdateManyPost } from '@/backend-client';
+import { LoadingStatus, useInventory } from '@/hooks/inventory-menager';
 
 type InventoryItem = {
   id: string;
@@ -20,48 +21,48 @@ type InventoryItem = {
   quantity: number;
 };
 
-async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> {
-  console.log("Fething inventory items...")
-  const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
+// async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> {
+//   console.log("Fething inventory items...")
+//   const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
 
-  const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'omit',
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Cookie": cookieHeader,
-    },
-  });
+//   const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
+//   const response = await fetch(url, {
+//     method: 'GET',
+//     credentials: 'omit',
+//     headers: {
+//       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+//       "Cookie": cookieHeader,
+//     },
+//   });
 
-  if (response.url && response.url !== url) {
-    console.warn("[Inventory] Redirected to:", response.url);
-  }
+//   if (response.url && response.url !== url) {
+//     console.warn("[Inventory] Redirected to:", response.url);
+//   }
 
-  if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status}`);
-  }
+//   if (!response.ok) {
+//     throw new Error(`HTTP error: ${response.status}`);
+//   }
 
-  const text = await response.text();
-  const doc = parse(text);
+//   const text = await response.text();
+//   const doc = parse(text);
 
-  const itemElements = doc.querySelectorAll(".odd.gradeX");
-  const items: InventoryItem[] = itemElements.map((itemEl, index) => {
-    const tds = itemEl.querySelectorAll("td");
-    const attributes = tds.map((td) => td.textContent.trim());
-    return {
-      id: attributes[0] ?? String(index),
-      name: attributes[1] ?? '',
-      barcode: null,
-      price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
-      quantity: parseInt(attributes[2] ?? '0', 10),
-    };
-  });
+//   const itemElements = doc.querySelectorAll(".odd.gradeX");
+//   const items: InventoryItem[] = itemElements.map((itemEl, index) => {
+//     const tds = itemEl.querySelectorAll("td");
+//     const attributes = tds.map((td) => td.textContent.trim());
+//     return {
+//       id: attributes[0] ?? String(index),
+//       name: attributes[1] ?? '',
+//       barcode: null,
+//       price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
+//       quantity: parseInt(attributes[2] ?? '0', 10),
+//     };
+//   });
 
-  // console.log(items)
+//   // console.log(items)
 
-  return items;
-}
+//   return items;
+// }
 
 
 export default function InventoryScreen() {
@@ -69,23 +70,24 @@ export default function InventoryScreen() {
   const params = useLocalSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const {session, refetchSessionId, isLoading: isSessionLoading} = useSession();
+  const {warehouseItems, upfitItems, inventoryItems, upfitStatus, warehouseStatus, refetchUpfit, refetchWarehouse, updateWarehouseItem} = useInventory();
   
-  const { data: items, error, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["inventory", session?.id],
-    queryFn: () => fetchInventoryItems(session!.id),
-    enabled: !!session?.id,
-    retry: 1,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  // const { data: items, error, isLoading, refetch, isRefetching } = useQuery({
+  //   queryKey: ["inventory", session?.id],
+  //   queryFn: () => fetchInventoryItems(session!.id),
+  //   enabled: !!session?.id,
+  //   retry: 1,
+  //   staleTime: 1000 * 60 * 5, // 5 minutes
+  // });
 
-  useEffect(() => {
-    if (error) {
-      console.error("Inventory fetch error:", error);
-    }
-    if (items) {
-      console.log("Inventory items loaded:", items.length);
-    }
-  }, [items, error]);
+  // useEffect(() => {
+  //   if (error) {
+  //     console.error("Inventory fetch error:", error);
+  //   }
+  //   if (items) {
+  //     console.log("Inventory items loaded:", items.length);
+  //   }
+  // }, [items, error]);
 
   useEffect(() => {
     if (params.scanned) {
@@ -93,30 +95,28 @@ export default function InventoryScreen() {
     }
   }, [params.scanned]);
 
-  useEffect(() => {
-    if (!isLoading && items) {
-      const products = items.map((item, index) => {
-        return {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          barcode: item.barcode
-        }
-      })
+  // useEffect(() => {
+  //   if (!isLoading && items) {
+  //     const products = items.map((item, index) => {
+  //       return {
+  //         id: item.id,
+  //         name: item.name,
+  //         price: item.price,
+  //         barcode: item.barcode
+  //       }
+  //     })
 
-      console.log("upserting products")
-      bulkUpsertProductsProductsUpdateManyPost({body: products})
-    }
-  }, [isLoading, items])
-
-  const inventoryData = items ?? [];
+  //     console.log("upserting products")
+  //     bulkUpsertProductsProductsUpdateManyPost({body: products})
+  //   }
+  // }, [isLoading, items])
   
-  const filteredInventory = inventoryData.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.barcode && item.barcode.includes(searchQuery));
-    return matchesSearch;
-  });
+  // const filteredInventory = inventoryData.filter((item) => {
+  //   const matchesSearch =
+  //     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     (item.barcode && item.barcode.includes(searchQuery));
+  //   return matchesSearch;
+  // });
 
   const handleScanPress = () => {
     router.push('/scan');
@@ -130,10 +130,13 @@ export default function InventoryScreen() {
     <View className="flex-1 bg-background">
       <Authorized>
         <FlatList
-          refreshing={isRefetching}
-          onRefresh={refetch}
-          data={filteredInventory}
-          keyExtractor={(item) => item.id}
+          refreshing={upfitStatus === LoadingStatus.Fetching && warehouseStatus === LoadingStatus.Fetching}
+          onRefresh={async () => {
+            await refetchUpfit();
+            await refetchWarehouse();
+          }}
+          data={inventoryItems}
+          keyExtractor={(item) => item.product.id}
           contentContainerStyle={{ paddingBottom: 20 }}
           ListHeaderComponent={
             <View className="px-5">
@@ -172,16 +175,16 @@ export default function InventoryScreen() {
           renderItem={({ item }) => (
             <View className="mx-5 rounded-xl p-4 mb-3 bg-card">
               <View className="gap-1.5">
-                <Text className="font-semibold text-foreground">{item.name}</Text>
-                <Text className="text-xs text-foreground-muted">ID: {item.id}</Text>
+                <Text className="font-semibold text-foreground">{item.product.name}</Text>
+                <Text className="text-xs text-foreground-muted">ID: {item.product.id}</Text>
                 <View className="flex-row items-center gap-3 mt-1">
                   <View className="px-2 py-1 rounded-md bg-primary/15">
                     <Text className="text-xs font-medium text-primary">
                       In Club
                     </Text>
                   </View>
-                  <Text className="text-sm text-foreground-secondary">Qty: {item.quantity}</Text>
-                  <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.price}.00 RSD</Text>
+                  <Text className="text-sm text-foreground-secondary">Qty: {item.in_club}</Text>
+                  <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.product.price}.00 RSD</Text>
                 </View>
               </View>
             </View>

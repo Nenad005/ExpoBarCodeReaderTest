@@ -1,11 +1,12 @@
-import { Children, createContext, ReactNode, useContext, useState } from "react";
+import { Children, createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useSession } from "./session-menager";
 import { getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
+import parse from "node-html-parser";
 
 type Product = {
     id: string;
     name: string;
-    barcode: string;
+    barcode: string | null;
     price: number;
 }
 
@@ -54,11 +55,19 @@ export const useInventory = () => useContext(inventoryContext)
 
 export const InventoryProvider = ({children} : {children : ReactNode}) => {
     const {session, authorized} = useSession()
-    const [warehouseItems, setWareHouseProducts] = useState<WarehouseItems | null>(null)
+    const [warehouseItems, setWarehouseItems] = useState<WarehouseItems | null>(null)
     const [upfitItems, setUpfitItems] = useState<UpfitItem[] | null>(null)
     const [upfitStatus, setUpfitStatus] = useState<LoadingStatus>(LoadingStatus.Fetching)
     const [warehouseStatus, setWarehouseStatus] = useState<LoadingStatus>(LoadingStatus.Fetching)
-
+    
+    const updateWarehouseItem = async (warehouseItem: WarehouseItem) => {
+        await upsertWarehouseItemWarehouseItemsUpdatePost({body: {
+            warehouse_id: warehouseItem.club_id,
+            product_id: warehouseItem.product.id,
+            quantity: warehouseItem.in_warehouse,
+        }})
+    }
+    
     const inventoryItems : InventoryItem[] | null = 
     upfitItems ? 
         warehouseItems ? 
@@ -75,24 +84,142 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
         })
     : null
 
-    const updateWarehouseItem = async (warehouseItem: WarehouseItem) => {
-        await upsertWarehouseItemWarehouseItemsUpdatePost({body: {
-            warehouse_id: warehouseItem.club_id,
-            product_id: warehouseItem.product.id,
-            quantity: warehouseItem.in_warehouse,
-        }})
-    }
 
     const fetchWarehouseItems = async () => {
         if (!session || !authorized) { 
-            setWareHouseProducts(null)
+            setWarehouseItems(null)
+            setWarehouseStatus(LoadingStatus.NotFound)
             return
         }
+        setWarehouseStatus(LoadingStatus.Fetching)
         const results = await getWarehouseItemsWarehouseItemsGet({query: {warehouse_id: session.club_id}})
-        
+        if (results.error === undefined) {
+            const warehouseItemsMap : WarehouseItems = {}
+            results.data.forEach(item => {
+                warehouseItemsMap[item.product_id] = item.quantity
+            });
+            setWarehouseItems(warehouseItemsMap)
+            setWarehouseStatus(LoadingStatus.Fetched)
+        } else {
+            setWarehouseStatus(LoadingStatus.NotFound)
+        }
     }
 
-    const value = {upfitItems, warehouseItems, inventoryItems, updateWarehouseItem} as inventoryContextType
+    const fetchUpfitItems = async () => {
+        if (!session || !authorized) { 
+            setUpfitItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+            return
+        }
+        setUpfitStatus(LoadingStatus.Fetching)
+        const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
+    
+        const cookieHeader = `PHPSESSID=${session.id.trim()}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Cookie": cookieHeader,
+            },
+        });
+    
+        if (response.url && response.url !== url) {
+            console.warn("[Inventory] Redirected to:", response.url);
+            setUpfitItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+        }
+    
+        if (!response.ok) {
+            setUpfitItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+        }
+    
+        const text = await response.text();
+        const doc = parse(text);
+    
+        const itemElements = doc.querySelectorAll(".odd.gradeX");
+        const items: UpfitItem[] = itemElements.map((itemEl, index) : UpfitItem => {
+            const tds = itemEl.querySelectorAll("td");
+            const attributes = tds.map((td) => td.textContent.trim());
+            return {
+                product: {
+                    id: attributes[0] ?? String(index),
+                    name: attributes[1] ?? '',
+                    barcode: null,
+                    price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
+                },
+                club_id: session.club_id,
+                in_club: parseInt(attributes[2] ?? '0', 10),
+            };
+        });
+        
+        setUpfitItems(items)
+        setUpfitStatus(LoadingStatus.Fetched)
+    }
+
+    useEffect(() => {
+        switch (upfitStatus) {
+            case LoadingStatus.Cached:
+                console.log("Using cached upfit items...")
+                break;
+            case LoadingStatus.Fetching:
+                console.log("Fetching upfit items...")
+                break;
+            case LoadingStatus.Fetched:
+                console.log("Upfit items fetched successfully")
+                break;
+            case LoadingStatus.NotFound:
+                console.error("Error: Upfit items not found")
+                break;
+            default:
+                console.log("Error: Unknown upfitStatus", upfitStatus)
+                break;
+            }
+    }, [upfitStatus])
+
+    useEffect(() => {
+        switch (warehouseStatus) {
+            case LoadingStatus.Cached:
+                console.log("Using cached warehouse items...")
+                break;
+            case LoadingStatus.Fetching:
+                console.log("Fetching warehouse items...")
+                break;
+            case LoadingStatus.Fetched:
+                console.log("Warehouse items fetched successfully")
+                break;
+            case LoadingStatus.NotFound:
+                console.error("Error: Warehouse items not found")
+                break;
+            default:
+                console.log("Error: Unknown warehouseStatus", warehouseStatus)
+                break;
+            }
+    }, [warehouseStatus])
+    
+    const refetchWarehouse = async () => {
+        await fetchWarehouseItems()
+    }
+
+    const refetchUpfit = async () => {
+        await fetchUpfitItems()
+    }
+
+    useEffect(() => {
+        if (authorized && session) {
+            fetchUpfitItems()
+            fetchWarehouseItems()
+        }
+        else {
+            setUpfitItems(null)
+            setWarehouseItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+            setWarehouseStatus(LoadingStatus.NotFound)
+        }
+    }, [session, authorized])
+
+    const value = {upfitItems, warehouseItems, inventoryItems, upfitStatus, warehouseStatus, updateWarehouseItem, refetchUpfit, refetchWarehouse}
 
     return <inventoryContext.Provider value={value}>
         {children}

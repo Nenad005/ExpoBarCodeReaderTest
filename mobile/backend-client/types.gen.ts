@@ -239,16 +239,24 @@ export type GetWarehouseItemsWarehouseItemsGetErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetWarehouseItemsWarehouseItemsGetError = GetWarehouseItemsWarehouseItemsGetErrors[keyof GetWarehouseItemsWarehouseItemsGetErrors];
 
 export type GetWarehouseItemsWarehouseItemsGetResponses = {
     /**
-     * Successful Response
+     * Response 200 Get Warehouse Items Warehouse Items Get
+     *
+     * Successfully retrieved warehouse items
      */
-    200: unknown;
+    200: Array<WarehouseItem>;
 };
+
+export type GetWarehouseItemsWarehouseItemsGetResponse = GetWarehouseItemsWarehouseItemsGetResponses[keyof GetWarehouseItemsWarehouseItemsGetResponses];
 
 export type GetPhpSessionIdPhpSessIdPostData = {
     body: UpfitAccount;
