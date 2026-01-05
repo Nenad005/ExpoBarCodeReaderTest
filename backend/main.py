@@ -92,13 +92,24 @@ def upsert_warehouse_item(warehouse_item: WarehouseItem, session: Session = Depe
     upsert(session, WarehouseItem, warehouse_item)
 
 @app.get(
-    "/warehouse_items"
+    "/warehouse_items",
+    response_model=List[WarehouseItem],
+    responses={
+        200: {"description": "Successfully retrieved warehouse items", "model": List[WarehouseItem]},
+        500: {"description": "Internal server error", "model": ErrorResponse},
+    }
 )
 def get_warehouse_items(warehouse_id: str, session: Session = Depends(get_session)):
-    query = select(WarehouseItem).where(WarehouseItem.warehouse_id == warehouse_id)
-    results = session.exec(query).all()
-
-    return results
+    try:
+        query = select(WarehouseItem).where(WarehouseItem.warehouse_id == warehouse_id)
+        results = session.exec(query).all()
+        return results
+    except Exception as e:
+        logger.error(f"Error retrieving warehouse items: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving warehouse items: {str(e)}"
+        )
 
 @app.post(
     "/php_sess_id/",

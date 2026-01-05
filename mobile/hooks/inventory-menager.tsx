@@ -1,6 +1,6 @@
 import { Children, createContext, ReactNode, useContext, useState } from "react";
 import { useSession } from "./session-menager";
-import { upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
+import { getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
 
 type Product = {
     id: string;
@@ -81,6 +81,15 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
             product_id: warehouseItem.product.id,
             quantity: warehouseItem.in_warehouse,
         }})
+    }
+
+    const fetchWarehouseItems = async () => {
+        if (!session || !authorized) { 
+            setWareHouseProducts(null)
+            return
+        }
+        const results = await getWarehouseItemsWarehouseItemsGet({query: {warehouse_id: session.club_id}})
+        
     }
 
     const value = {upfitItems, warehouseItems, inventoryItems, updateWarehouseItem} as inventoryContextType

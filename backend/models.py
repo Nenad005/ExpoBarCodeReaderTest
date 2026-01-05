@@ -64,7 +64,7 @@ class WarehouseItem(SQLModel, table=True):
     warehouse_id: str = Field(foreign_key="warehouses.id", primary_key=True)
     product_id: str = Field(foreign_key="products.id", primary_key=True)
     
-    quantity: str
+    quantity: int
 
     warehouse_link: "Warehouse" = Relationship(back_populates="items")
     product_link: "Product" = Relationship()
