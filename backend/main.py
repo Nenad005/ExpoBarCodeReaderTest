@@ -77,6 +77,7 @@ def insert_if_not_exists_bulk(session: Session, model: type[SQLModel], objects: 
     "/products/update_many"
 )
 def bulk_upsert_products(products: list[Product], session: Session = Depends(get_session)):
+    
     upsert(session, Product, products)
 
 @app.post(

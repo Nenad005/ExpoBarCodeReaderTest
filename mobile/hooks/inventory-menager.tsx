@@ -1,6 +1,6 @@
 import { Children, createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useSession } from "./session-menager";
-import { getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
+import { bulkUpsertProductsProductsUpdateManyPost, getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
 import parse from "node-html-parser";
 
 type Product = {
@@ -24,7 +24,7 @@ type WarehouseItem = {
 
 type WarehouseItems = Record<string, number>
 
-type InventoryItem = {
+export type InventoryItem = {
     product: Product
     club_id: string
     in_club: number
@@ -62,11 +62,22 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
     const [warehouseStatus, setWarehouseStatus] = useState<LoadingStatus>(LoadingStatus.Idle)
     
     const updateWarehouseItem = async (warehouseItem: WarehouseItem) => {
-        await upsertWarehouseItemWarehouseItemsUpdatePost({body: {
+        console.log(warehouseItem.product.barcode)
+        upsertWarehouseItemWarehouseItemsUpdatePost({body: {
             warehouse_id: warehouseItem.club_id,
             product_id: warehouseItem.product.id,
             quantity: warehouseItem.in_warehouse,
         }})
+        bulkUpsertProductsProductsUpdateManyPost({body: [warehouseItem.product]})
+        let newUpfitItems = upfitItems
+        let changedProduct = newUpfitItems?.find((item: UpfitItem) => item.product.id == warehouseItem.product.id)
+        if (changedProduct) {
+            console.log("nasao proizvod")
+            changedProduct.product.barcode = warehouseItem.product.barcode
+            setUpfitItems(newUpfitItems)
+            console.log("izmenio proizvod")
+        }
+        console.warn("CHANGED UPFIT ITEMS")
     }
     
     const inventoryItems : InventoryItem[] | null = 

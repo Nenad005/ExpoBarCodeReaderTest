@@ -7,12 +7,13 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
-import { LoadingStatus, useInventory } from '@/hooks/inventory-menager';
+import { InventoryItem, LoadingStatus, useInventory } from '@/hooks/inventory-menager';
 import LoadingStatusIndicator from '@/components/ui/loadingStatusIndicator';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { InventoryItemCard, InventoryItemDetail } from '@/components/inventoryScreen/inventory-item-card';
 
 type SortOption = "abcasc" | "abcdesc" | "prcasc" | "prcdesc" | "stkasc" | "stkdesc"
 
@@ -21,6 +22,7 @@ export default function InventoryScreen() {
   const params = useLocalSearchParams();
   const [sortOption, setSortOption] = useState<SortOption>("abcasc")
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const {session, refetchSessionId, isLoading: isSessionLoading} = useSession();
   const {warehouseItems, upfitItems, inventoryItems, upfitStatus, warehouseStatus, refetchUpfit, refetchWarehouse, updateWarehouseItem} = useInventory();
 
@@ -67,6 +69,7 @@ export default function InventoryScreen() {
   const placeholderColor = '#8E8E93';
 
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const detailBottomSheetRef = useRef<BottomSheet>(null);
 
   const sortOptions: Record<SortOption, string> = {
     "abcasc" : "Alphabetical (A-Z)",
@@ -81,6 +84,41 @@ export default function InventoryScreen() {
     setSortOption(value)
     bottomSheetRef.current?.close()
   }
+
+  const handleItemLongPress = useCallback((item: InventoryItem) => {
+    setSelectedItem(item);
+    detailBottomSheetRef.current?.expand();
+  }, []);
+
+  const handleSaveBarcode = useCallback(async (item: InventoryItem, barcode: string) => {
+    console.log("dosao")
+    if (!item) return;
+    console.log("provera")
+    
+    try {
+      console.log("pokusavam")
+      await updateWarehouseItem({
+        product: {...item.product, barcode: barcode},
+        club_id: item.club_id,
+        in_warehouse: item.in_warehouse === null ? 0 : item.in_warehouse
+      })
+      console.log("uspeo")
+    } catch (error) {
+      console.error('Failed to update barcode:', error);
+    }
+  }, [updateWarehouseItem]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
 
   return (
     <View className="flex-1 bg-background">
@@ -120,7 +158,7 @@ export default function InventoryScreen() {
                     <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
                     <TextInput
                       className="flex-1 text-base text-foreground"
-                      placeholder="Search products or barcodes..."
+                      placeholder="Search for products..."
                       placeholderTextColor={placeholderColor}
                       value={searchQuery}
                       onChangeText={setSearchQuery}
@@ -150,21 +188,7 @@ export default function InventoryScreen() {
               </View>
             }
             renderItem={({ item }) => (
-              <View className="mx-5 rounded-xl p-4 mb-3 bg-card">
-                <View className="gap-1.5">
-                  <Text className="font-semibold text-foreground">{item.product.name}</Text>
-                  <Text className="text-xs text-foreground-muted">ID: {item.product.id}</Text>
-                  <View className="flex-row items-center gap-3 mt-1">
-                    <View className="px-2 py-1 rounded-md bg-primary/15">
-                      <Text className="text-xs font-medium text-primary">
-                        In Club
-                      </Text>
-                    </View>
-                    <Text className="text-sm text-foreground-secondary">Qty: {item.in_club}</Text>
-                    <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.product.price}.00 RSD</Text>
-                  </View>
-                </View>
-              </View>
+              <InventoryItemCard item={item} onLongPress={handleItemLongPress} />
             )}
             ListEmptyComponent={
               <View className="items-center justify-center py-16 gap-3">
@@ -178,36 +202,58 @@ export default function InventoryScreen() {
             snapPoints={["30%", "40%"]} 
             index={-1} 
             enablePanDownToClose={true}
-            backgroundStyle={{backgroundColor: isDark ? "#27272a" : "#e4e4e7"}}
+            backdropComponent={renderBackdrop}
+            backgroundStyle={{backgroundColor: isDark ? "#18181b" : "#e4e4e7"}}
             handleIndicatorStyle={{backgroundColor: "white"}}
             handleStyle={{borderBottomWidth: 1, borderBottomColor: "white", borderStyle: "dashed"}}
           >
             <BottomSheetView className="p-6 gap-6">
               <Text className="text-xl font-bold text-foreground mb-2">Sort Inventory</Text>
-              <View className="gap-4">
+              <View className="gap-4 flex flex-row flex-wrap">
                 {(Object.keys(sortOptions) as SortOption[]).map((key) => {
                   return (
                     <Pressable
                       key={key}
                       onPress={() => onSortChange(key)}
-                      className="flex-row items-center justify-between py-2"
+                      className="flex-row items-center justify-start gap-2"
                     >
-                      <Text className={`text-base ${sortOption === key ? 'text-primary font-semibold' : 'text-foreground'}`}>
-                        {sortOptions[key]}
-                      </Text>
                       <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
                         sortOption === key 
                           ? 'border-primary' 
-                          : 'border-muted-foreground/30'
+                          : 'border-foreground-muted'
                       }`}>
                         {sortOption === key && (
                           <View className="w-3 h-3 bg-primary rounded-full" />
                         )}
                       </View>
+                      <Text className={`text-base ${sortOption === key ? 'text-primary font-semibold' : 'text-foreground-muted'}`}>
+                        {sortOptions[key]}
+                      </Text>
                     </Pressable>
                   )
                 })}
               </View>
+            </BottomSheetView>
+          </BottomSheet>
+
+          <BottomSheet 
+            ref={detailBottomSheetRef} 
+            snapPoints={["50%", "75%"]} 
+            index={-1} 
+            enablePanDownToClose={true}
+            backdropComponent={renderBackdrop}
+            backgroundStyle={{backgroundColor: isDark ? "#18181b" : "#e4e4e7"}}
+            handleIndicatorStyle={{backgroundColor: "white"}}
+            handleStyle={{borderBottomWidth: 1, borderBottomColor: "white", borderStyle: "dashed"}}
+          >
+            <BottomSheetView className="flex-1 p-6">
+              {selectedItem && (
+                <InventoryItemDetail 
+                  item={selectedItem}
+                  onClose={() => detailBottomSheetRef.current?.close()}
+                  onSaveBarcode={handleSaveBarcode}
+                />
+              )}
             </BottomSheetView>
           </BottomSheet>
         </GestureHandlerRootView>
