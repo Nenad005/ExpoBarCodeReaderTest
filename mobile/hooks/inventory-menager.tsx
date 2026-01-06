@@ -36,6 +36,7 @@ export enum LoadingStatus {
     NotFound,
     Fetched,
     Fetching,
+    Idle,
 }
 
 type inventoryContextType = {
@@ -57,8 +58,8 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
     const {session, authorized} = useSession()
     const [warehouseItems, setWarehouseItems] = useState<WarehouseItems | null>(null)
     const [upfitItems, setUpfitItems] = useState<UpfitItem[] | null>(null)
-    const [upfitStatus, setUpfitStatus] = useState<LoadingStatus>(LoadingStatus.Fetching)
-    const [warehouseStatus, setWarehouseStatus] = useState<LoadingStatus>(LoadingStatus.Fetching)
+    const [upfitStatus, setUpfitStatus] = useState<LoadingStatus>(LoadingStatus.Idle)
+    const [warehouseStatus, setWarehouseStatus] = useState<LoadingStatus>(LoadingStatus.Idle)
     
     const updateWarehouseItem = async (warehouseItem: WarehouseItem) => {
         await upsertWarehouseItemWarehouseItemsUpdatePost({body: {
@@ -88,7 +89,7 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
     const fetchWarehouseItems = async () => {
         if (!session || !authorized) { 
             setWarehouseItems(null)
-            setWarehouseStatus(LoadingStatus.NotFound)
+            setWarehouseStatus(LoadingStatus.Idle)
             return
         }
         setWarehouseStatus(LoadingStatus.Fetching)
@@ -108,7 +109,7 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
     const fetchUpfitItems = async () => {
         if (!session || !authorized) { 
             setUpfitItems(null)
-            setUpfitStatus(LoadingStatus.NotFound)
+            setUpfitStatus(LoadingStatus.Idle)
             return
         }
         setUpfitStatus(LoadingStatus.Fetching)
@@ -172,6 +173,9 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
             case LoadingStatus.NotFound:
                 console.error("Error: Upfit items not found")
                 break;
+            case LoadingStatus.Idle:
+                console.log("Upfit items idle")
+                break;
             default:
                 console.log("Error: Unknown upfitStatus", upfitStatus)
                 break;
@@ -191,6 +195,9 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
                 break;
             case LoadingStatus.NotFound:
                 console.error("Error: Warehouse items not found")
+                break;
+            case LoadingStatus.Idle:
+                console.log("Warehouse items idle")
                 break;
             default:
                 console.log("Error: Unknown warehouseStatus", warehouseStatus)
@@ -214,8 +221,8 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
         else {
             setUpfitItems(null)
             setWarehouseItems(null)
-            setUpfitStatus(LoadingStatus.NotFound)
-            setWarehouseStatus(LoadingStatus.NotFound)
+            setUpfitStatus(LoadingStatus.Idle)
+            setWarehouseStatus(LoadingStatus.Idle)
         }
     }, [session, authorized])
 

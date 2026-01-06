@@ -5,89 +5,24 @@ import { Colors } from '@/constants/theme';
 import { useSession } from '@/hooks/session-menager';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { parse } from 'node-html-parser';
-import { bulkUpsertProductsProductsUpdateManyPost } from '@/backend-client';
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { LoadingStatus, useInventory } from '@/hooks/inventory-menager';
+import LoadingStatusIndicator from '@/components/ui/loadingStatusIndicator';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-type InventoryItem = {
-  id: string;
-  name: string;
-  barcode: string | null;
-  price: number;
-  quantity: number;
-};
-
-// async function fetchInventoryItems(sessionId: string): Promise<InventoryItem[]> {
-//   console.log("Fething inventory items...")
-//   const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
-
-//   const cookieHeader = `PHPSESSID=${sessionId.trim()}`;
-//   const response = await fetch(url, {
-//     method: 'GET',
-//     credentials: 'omit',
-//     headers: {
-//       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-//       "Cookie": cookieHeader,
-//     },
-//   });
-
-//   if (response.url && response.url !== url) {
-//     console.warn("[Inventory] Redirected to:", response.url);
-//   }
-
-//   if (!response.ok) {
-//     throw new Error(`HTTP error: ${response.status}`);
-//   }
-
-//   const text = await response.text();
-//   const doc = parse(text);
-
-//   const itemElements = doc.querySelectorAll(".odd.gradeX");
-//   const items: InventoryItem[] = itemElements.map((itemEl, index) => {
-//     const tds = itemEl.querySelectorAll("td");
-//     const attributes = tds.map((td) => td.textContent.trim());
-//     return {
-//       id: attributes[0] ?? String(index),
-//       name: attributes[1] ?? '',
-//       barcode: null,
-//       price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
-//       quantity: parseInt(attributes[2] ?? '0', 10),
-//     };
-//   });
-
-//   // console.log(items)
-
-//   return items;
-// }
-
+type SortOption = "abcasc" | "abcdesc" | "prcasc" | "prcdesc" | "stkasc" | "stkdesc"
 
 export default function InventoryScreen() {
   const colorScheme = useColorScheme();
   const params = useLocalSearchParams();
+  const [sortOption, setSortOption] = useState<SortOption>("abcasc")
   const [searchQuery, setSearchQuery] = useState('');
   const {session, refetchSessionId, isLoading: isSessionLoading} = useSession();
   const {warehouseItems, upfitItems, inventoryItems, upfitStatus, warehouseStatus, refetchUpfit, refetchWarehouse, updateWarehouseItem} = useInventory();
-  
-  // const { data: items, error, isLoading, refetch, isRefetching } = useQuery({
-  //   queryKey: ["inventory", session?.id],
-  //   queryFn: () => fetchInventoryItems(session!.id),
-  //   enabled: !!session?.id,
-  //   retry: 1,
-  //   staleTime: 1000 * 60 * 5, // 5 minutes
-  // });
-
-  // useEffect(() => {
-  //   if (error) {
-  //     console.error("Inventory fetch error:", error);
-  //   }
-  //   if (items) {
-  //     console.log("Inventory items loaded:", items.length);
-  //   }
-  // }, [items, error]);
 
   useEffect(() => {
     if (params.scanned) {
@@ -95,28 +30,33 @@ export default function InventoryScreen() {
     }
   }, [params.scanned]);
 
-  // useEffect(() => {
-  //   if (!isLoading && items) {
-  //     const products = items.map((item, index) => {
-  //       return {
-  //         id: item.id,
-  //         name: item.name,
-  //         price: item.price,
-  //         barcode: item.barcode
-  //       }
-  //     })
+  const filteredItems = inventoryItems?.filter((item) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      item.product.name.toLowerCase().includes(query) ||
+      item.product.id.toLowerCase().includes(query) ||
+      (item.product.barcode && item.product.barcode.toLowerCase().includes(query))
+    );
+  });
 
-  //     console.log("upserting products")
-  //     bulkUpsertProductsProductsUpdateManyPost({body: products})
-  //   }
-  // }, [isLoading, items])
-  
-  // const filteredInventory = inventoryData.filter((item) => {
-  //   const matchesSearch =
-  //     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     (item.barcode && item.barcode.includes(searchQuery));
-  //   return matchesSearch;
-  // });
+  const sortedItems = [...(filteredItems || [])].sort((a, b) => {
+    switch (sortOption) {
+      case "abcasc":
+        return a.product.name.localeCompare(b.product.name);
+      case "abcdesc":
+        return b.product.name.localeCompare(a.product.name);
+      case "prcasc":
+        return a.product.price - b.product.price;
+      case "prcdesc":
+        return b.product.price - a.product.price;
+      case "stkasc":
+        return a.in_club - b.in_club;
+      case "stkdesc":
+        return b.in_club - a.in_club;
+      default:
+        return 0;
+    }
+  });
 
   const handleScanPress = () => {
     router.push('/scan');
@@ -126,76 +66,151 @@ export default function InventoryScreen() {
   const tintColor = Colors[colorScheme ?? 'light'].tint;
   const placeholderColor = '#8E8E93';
 
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const sortOptions: Record<SortOption, string> = {
+    "abcasc" : "Alphabetical (A-Z)",
+    "abcdesc" : "Alphabetical (Z-A)",
+    "prcasc" : "Price (lowest)",
+    "prcdesc" : "Price (highest)",
+    "stkasc" : "Stock (lowest)",
+    "stkdesc" : "Stock (highest)"
+  }
+
+  const onSortChange = (value: SortOption) => {
+    setSortOption(value)
+    bottomSheetRef.current?.close()
+  }
+
   return (
     <View className="flex-1 bg-background">
       <Authorized>
-        <FlatList
-          refreshing={upfitStatus === LoadingStatus.Fetching && warehouseStatus === LoadingStatus.Fetching}
-          onRefresh={async () => {
-            await refetchUpfit();
-            await refetchWarehouse();
-          }}
-          data={inventoryItems}
-          keyExtractor={(item) => item.product.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          ListHeaderComponent={
-            <View className="px-5">
-              <View className="pt-16 pb-4 flex gap-1">
-                <Text className="text-3xl font-bold text-foreground">Club Inventory</Text>
-                <Text className='text-foreground-muted'>{`${session?.club_name}`}</Text>
-              </View>
-
-              {/* Search Bar with QR Scanner */}
-              <View className="flex-row mb-4 gap-3">
-                <View className="flex-1 flex-row items-center rounded-xl px-3 gap-2 h-11 bg-secondary">
-                  <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
-                  <TextInput
-                    className="flex-1 text-base text-foreground"
-                    placeholder="Search products or barcodes..."
-                    placeholderTextColor={placeholderColor}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                  />
-                  {searchQuery.length > 0 && (
-                    <Pressable onPress={() => setSearchQuery('')}>
-                      <Ionicons size={20} name="close-circle" color={placeholderColor} />
-                    </Pressable>
-                  )}
-                </View>
-
-                <Pressable 
-                  className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" 
-                  onPress={handleScanPress}
-                >
-                  <Ionicons size={24} name="qr-code" color={tintColor} />
-                </Pressable>
-              </View>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View className="mx-5 rounded-xl p-4 mb-3 bg-card">
-              <View className="gap-1.5">
-                <Text className="font-semibold text-foreground">{item.product.name}</Text>
-                <Text className="text-xs text-foreground-muted">ID: {item.product.id}</Text>
-                <View className="flex-row items-center gap-3 mt-1">
-                  <View className="px-2 py-1 rounded-md bg-primary/15">
-                    <Text className="text-xs font-medium text-primary">
-                      In Club
-                    </Text>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <FlatList
+            refreshing={upfitStatus === LoadingStatus.Fetching && warehouseStatus === LoadingStatus.Fetching}
+            onRefresh={async () => {
+              refetchUpfit();
+              refetchWarehouse();
+            }}
+            data={sortedItems}
+            keyExtractor={(item) => item.product.id}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListHeaderComponent={
+              <View className="px-5">
+                <View className="pt-16 pb-4 flex flex-row gap-1 items-start">
+                  <View>
+                    <Text className="text-3xl font-bold text-foreground">Club Inventory</Text>
+                    <Text className='text-foreground-muted'>{`${session?.club_name}`}</Text>
                   </View>
-                  <Text className="text-sm text-foreground-secondary">Qty: {item.in_club}</Text>
-                  <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.product.price}.00 RSD</Text>
+                  <View className='flex flex-col ml-auto items-end mt-1'>
+                    <View className='flex-row items-center gap-1'>
+                      <Text className='text-foreground-muted text-right'>Upfit -</Text>
+                      <LoadingStatusIndicator status={upfitStatus}/>
+                    </View>
+                    <View className='flex-row items-center gap-1'>
+                      <Text className='text-foreground-muted text-right'>Warehouse -</Text>
+                      <LoadingStatusIndicator status={warehouseStatus}/>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Search Bar with QR Scanner */}
+                <View className="flex-row mb-4 gap-1">
+                  <View className="flex-1 flex-row items-center rounded-xl px-3 gap-2 h-11 bg-secondary">
+                    <IconSymbol size={20} name="magnifyingglass" color={placeholderColor} />
+                    <TextInput
+                      className="flex-1 text-base text-foreground"
+                      placeholder="Search products or barcodes..."
+                      placeholderTextColor={placeholderColor}
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                    />
+                    {searchQuery.length > 0 && (
+                      <Pressable onPress={() => {
+                          setSearchQuery('')
+                        }}>
+                        <Ionicons size={20} name="close-circle" color={placeholderColor} />
+                      </Pressable>
+                    )}
+                  </View>
+
+                  <Pressable 
+                    className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" 
+                    onPress={handleScanPress}
+                  >
+                    <Ionicons size={24} name="qr-code" color={tintColor} />
+                  </Pressable>
+                  <Pressable onPress={() => bottomSheetRef.current?.snapToIndex(1)} className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" >
+                    <FontAwesome size={24} name='sliders' color={tintColor}></FontAwesome>
+                  </Pressable>
+                  <Pressable className="w-11 h-11 rounded-xl items-center justify-center bg-secondary" >
+                    <Ionicons size={30} name='help-circle' color={tintColor}></Ionicons>
+                  </Pressable>
                 </View>
               </View>
-            </View>
-          )}
-          ListEmptyComponent={
-            <View className="items-center justify-center py-16 gap-3">
-              <IconSymbol size={60} name="shippingbox" color={placeholderColor} />
-              <Text className="text-base text-foreground-muted">No items found</Text>
-            </View>
-          }
-        />
+            }
+            renderItem={({ item }) => (
+              <View className="mx-5 rounded-xl p-4 mb-3 bg-card">
+                <View className="gap-1.5">
+                  <Text className="font-semibold text-foreground">{item.product.name}</Text>
+                  <Text className="text-xs text-foreground-muted">ID: {item.product.id}</Text>
+                  <View className="flex-row items-center gap-3 mt-1">
+                    <View className="px-2 py-1 rounded-md bg-primary/15">
+                      <Text className="text-xs font-medium text-primary">
+                        In Club
+                      </Text>
+                    </View>
+                    <Text className="text-sm text-foreground-secondary">Qty: {item.in_club}</Text>
+                    <Text className='text-sm font-bold text-foreground-muted ml-auto'>{item.product.price}.00 RSD</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={
+              <View className="items-center justify-center py-16 gap-3">
+                <IconSymbol size={60} name="shippingbox" color={placeholderColor} />
+                <Text className="text-base text-foreground-muted">No items found</Text>
+              </View>
+            }
+          />
+          <BottomSheet 
+            ref={bottomSheetRef} 
+            snapPoints={["30%", "40%"]} 
+            index={-1} 
+            enablePanDownToClose={true}
+            backgroundStyle={{backgroundColor: isDark ? "#27272a" : "#e4e4e7"}}
+            handleIndicatorStyle={{backgroundColor: "white"}}
+            handleStyle={{borderBottomWidth: 1, borderBottomColor: "white", borderStyle: "dashed"}}
+          >
+            <BottomSheetView className="p-6 gap-6">
+              <Text className="text-xl font-bold text-foreground mb-2">Sort Inventory</Text>
+              <View className="gap-4">
+                {(Object.keys(sortOptions) as SortOption[]).map((key) => {
+                  return (
+                    <Pressable
+                      key={key}
+                      onPress={() => onSortChange(key)}
+                      className="flex-row items-center justify-between py-2"
+                    >
+                      <Text className={`text-base ${sortOption === key ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                        {sortOptions[key]}
+                      </Text>
+                      <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
+                        sortOption === key 
+                          ? 'border-primary' 
+                          : 'border-muted-foreground/30'
+                      }`}>
+                        {sortOption === key && (
+                          <View className="w-3 h-3 bg-primary rounded-full" />
+                        )}
+                      </View>
+                    </Pressable>
+                  )
+                })}
+              </View>
+            </BottomSheetView>
+          </BottomSheet>
+        </GestureHandlerRootView>
       </Authorized>
 
       <UnAuthorized>
