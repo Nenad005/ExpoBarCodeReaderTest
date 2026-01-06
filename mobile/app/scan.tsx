@@ -12,7 +12,6 @@ export default function ScanScreen() {
     setScanned(true);
     setData(data);
     
-    // Navigate back to inventory with scanned data
     setTimeout(() => {
       router.replace({
         pathname: '/(tabs)/inventory',
@@ -62,7 +61,23 @@ export default function ScanScreen() {
             }}
           />
 
-          <View className="absolute left-0 right-0 top-8 items-center" pointerEvents="none">
+          {/* Overlay for scanning area */}
+          <View className="absolute inset-0 flex-col z-10 pointer-events-none">
+            <View className="flex-1 bg-black/60" />
+            <View className="flex-row h-72">
+              <View className="flex-1 bg-black/60" />
+              <View className="w-72 border border-white/20 bg-transparent rounded-lg relative">
+                 <View className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-emerald-500 -ml-[2px] -mt-[2px] rounded-tl-sm" />
+                 <View className="absolute top-0 right-0 w-8 h-8 border-r-4 border-t-4 border-emerald-500 -mr-[2px] -mt-[2px] rounded-tr-sm" />
+                 <View className="absolute bottom-0 left-0 w-8 h-8 border-l-4 border-b-4 border-emerald-500 -ml-[2px] -mb-[2px] rounded-bl-sm" />
+                 <View className="absolute bottom-0 right-0 w-8 h-8 border-r-4 border-b-4 border-emerald-500 -mr-[2px] -mb-[2px] rounded-br-sm" />
+              </View>
+              <View className="flex-1 bg-black/60" />
+            </View>
+            <View className="flex-1 bg-black/60" />
+          </View>
+
+          <View className="absolute left-0 right-0 top-12 items-center z-20" pointerEvents="none">
             <View className="bg-black/70 py-2.5 px-4 rounded-lg">
               <Text className="text-white text-base font-semibold">
                 {scanned ? `Scanned: ${data}` : 'Point the camera at a barcode'}
@@ -71,7 +86,7 @@ export default function ScanScreen() {
           </View>
 
           {scanned && (
-            <View className="absolute bottom-10 left-0 right-0 items-center">
+            <View className="absolute bottom-10 left-0 right-0 items-center z-20">
               <Pressable
                 onPress={() => {
                   setScanned(false);
