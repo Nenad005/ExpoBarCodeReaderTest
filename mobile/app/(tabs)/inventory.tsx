@@ -7,6 +7,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, useLocalSearchParams } from 'expo-router';
+import { BackHandler } from 'react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { InventoryItem, LoadingStatus, useInventory } from '@/hooks/inventory-menager';
@@ -23,6 +24,8 @@ export default function InventoryScreen() {
   const [sortOption, setSortOption] = useState<SortOption>("abcasc")
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [bottomSheetIndex, setBottomSheetIndex] = useState(-1);
+  const [detailBottomSheetIndex, setDetailBottomSheetIndex] = useState(-1);
   const {session, refetchSessionId, isLoading: isSessionLoading} = useSession();
   const {warehouseItems, upfitItems, inventoryItems, upfitStatus, warehouseStatus, refetchUpfit, refetchWarehouse, updateWarehouseItem} = useInventory();
 
@@ -85,12 +88,12 @@ export default function InventoryScreen() {
     bottomSheetRef.current?.close()
   }
 
-  const handleItemLongPress = useCallback((item: InventoryItem) => {
+  const handleItemLongPress = (item: InventoryItem) => {
     setSelectedItem(item);
     detailBottomSheetRef.current?.expand();
-  }, []);
+  };
 
-  const handleSaveBarcode = useCallback(async (item: InventoryItem, barcode: string) => {
+  const handleSaveBarcode = async (item: InventoryItem, barcode: string) => {
     console.log("dosao")
     if (!item) return;
     console.log("provera")
@@ -106,7 +109,7 @@ export default function InventoryScreen() {
     } catch (error) {
       console.error('Failed to update barcode:', error);
     }
-  }, [updateWarehouseItem]);
+  };
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -119,6 +122,25 @@ export default function InventoryScreen() {
     ),
     []
   );
+
+  useEffect(() => {
+    const onBackPress = () => {
+      let closed = false;
+      if (detailBottomSheetIndex !== -1) {
+        detailBottomSheetRef.current?.close();
+        closed = true;
+      }
+      if (bottomSheetIndex !== -1) {
+        bottomSheetRef.current?.close();
+        closed = true;
+      }
+      return closed;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => {
+      subscription.remove();
+    };
+  }, [detailBottomSheetIndex, bottomSheetIndex]);
 
   return (
     <View className="flex-1 bg-background">
@@ -199,6 +221,7 @@ export default function InventoryScreen() {
           />
           <BottomSheet 
             ref={bottomSheetRef} 
+            onChange={setBottomSheetIndex}
             snapPoints={["30%", "40%"]} 
             index={-1} 
             enablePanDownToClose={true}
@@ -237,8 +260,9 @@ export default function InventoryScreen() {
           </BottomSheet>
 
           <BottomSheet 
+            onChange={setDetailBottomSheetIndex}
             ref={detailBottomSheetRef} 
-            snapPoints={["50%", "75%"]} 
+            snapPoints={["24%"]} 
             index={-1} 
             enablePanDownToClose={true}
             backdropComponent={renderBackdrop}
@@ -248,7 +272,8 @@ export default function InventoryScreen() {
           >
             <BottomSheetView className="flex-1 p-6">
               {selectedItem && (
-                <InventoryItemDetail 
+                <InventoryItemDetail
+                  bottomSheetRef = {detailBottomSheetRef}
                   item={selectedItem}
                   onClose={() => detailBottomSheetRef.current?.close()}
                   onSaveBarcode={handleSaveBarcode}
