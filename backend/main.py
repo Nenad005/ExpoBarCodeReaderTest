@@ -89,7 +89,7 @@ def bulk_upsert_products(products: list[Product], session: Session = Depends(get
 )
 def get_product_barcodes(session: Session = Depends(get_session)):
     try:
-        products = session.exec(select(Product)).all()
+        products = session.exec(select(Product.id, Product.barcode)).all()
         return {product.id: product.barcode for product in products}
     except Exception as e:
         logger.error(f"Error retrieving product barcodes: {e}")

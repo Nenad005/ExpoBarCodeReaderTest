@@ -176,6 +176,35 @@ export type BulkUpsertProductsProductsUpdateManyPostResponses = {
     200: unknown;
 };
 
+export type GetProductBarcodesProductsBarcodesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/products/barcodes';
+};
+
+export type GetProductBarcodesProductsBarcodesGetErrors = {
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetProductBarcodesProductsBarcodesGetError = GetProductBarcodesProductsBarcodesGetErrors[keyof GetProductBarcodesProductsBarcodesGetErrors];
+
+export type GetProductBarcodesProductsBarcodesGetResponses = {
+    /**
+     * Response 200 Get Product Barcodes Products Barcodes Get
+     *
+     * Successfully retrieved product barcodes
+     */
+    200: {
+        [key: string]: string | null;
+    };
+};
+
+export type GetProductBarcodesProductsBarcodesGetResponse = GetProductBarcodesProductsBarcodesGetResponses[keyof GetProductBarcodesProductsBarcodesGetResponses];
+
 export type UpsertWarehouseWarehousesUpdatePostData = {
     body: Warehouse;
     path?: never;

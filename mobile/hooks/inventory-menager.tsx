@@ -1,6 +1,6 @@
 import { Children, createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useSession } from "./session-menager";
-import { bulkUpsertProductsProductsUpdateManyPost, getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
+import { bulkUpsertProductsProductsUpdateManyPost, getProductBarcodesProductsBarcodesGet, getWarehouseItemsWarehouseItemsGet, upsertWarehouseItemWarehouseItemsUpdatePost } from "@/backend-client";
 import parse from "node-html-parser";
 
 type Product = {
@@ -127,7 +127,7 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
         const url = "https://nonstopfitness.upfit.cloud/financial/inventory-clubs";
     
         const cookieHeader = `PHPSESSID=${session.id.trim()}`;
-        const response = await fetch(url, {
+        const upfitResponse = await fetch(url, {
             method: 'GET',
             credentials: 'omit',
             headers: {
@@ -136,38 +136,58 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
             },
         });
     
-        if (response.url && response.url !== url) {
-            console.warn("[Inventory] Redirected to:", response.url);
+        if (upfitResponse.url && upfitResponse.url !== url) {
+            console.error("[Inventory] Redirected to:", upfitResponse.url);
             setUpfitItems(null)
             setUpfitStatus(LoadingStatus.NotFound)
+            return
         }
     
-        if (!response.ok) {
+        if (!upfitResponse.ok) {
+            console.error("Error fetching upfit items")
             setUpfitItems(null)
             setUpfitStatus(LoadingStatus.NotFound)
+            return
+        }
+
+        const dbResponse = await getProductBarcodesProductsBarcodesGet()
+        if (dbResponse.error !== undefined || !dbResponse.data){
+            console.error("Error fetching product barcodes")
+            setUpfitItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+            return
         }
     
-        const text = await response.text();
+        const text = await upfitResponse.text();
         const doc = parse(text);
     
         const itemElements = doc.querySelectorAll(".odd.gradeX");
-        const items: UpfitItem[] = itemElements.map((itemEl, index) : UpfitItem => {
-            const tds = itemEl.querySelectorAll("td");
-            const attributes = tds.map((td) => td.textContent.trim());
-            return {
-                product: {
-                    id: attributes[0] ?? String(index),
-                    name: attributes[1] ?? '',
-                    barcode: null,
-                    price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
-                },
-                club_id: session.club_id,
-                in_club: parseInt(attributes[2] ?? '0', 10),
-            };
-        });
-        
-        setUpfitItems(items)
-        setUpfitStatus(LoadingStatus.Fetched)
+        try{
+            const items: UpfitItem[] = itemElements.map((itemEl, index) : UpfitItem => {
+                const tds = itemEl.querySelectorAll("td");
+                const attributes = tds.map((td) => td.textContent.trim());
+                const barcode = dbResponse.data[attributes[0]] ?? null
+                return {
+                    product: {
+                        id: attributes[0],
+                        name: attributes[1],
+                        barcode,
+                        price: parseInt(attributes[4].trim().slice(0, -3).replace(" ", "")),
+                    },
+                    club_id: session.club_id,
+                    in_club: parseInt(attributes[2] ?? '0', 10),
+                };
+            });
+
+            setUpfitItems(items)
+            setUpfitStatus(LoadingStatus.Fetched)
+        }
+        catch {
+            console.error("Error parsing upfit data")
+            setUpfitItems(null)
+            setUpfitStatus(LoadingStatus.NotFound)
+            return
+        }
     }
 
     useEffect(() => {
@@ -180,6 +200,13 @@ export const InventoryProvider = ({children} : {children : ReactNode}) => {
                 break;
             case LoadingStatus.Fetched:
                 console.log("Upfit items fetched successfully")
+                upfitItems?.map((item) => {
+                    return {
+                        name: item.product.name,
+                        barcode: item.product.barcode,
+                    
+                    }
+                }).forEach((item) => console.log(item))
                 break;
             case LoadingStatus.NotFound:
                 console.error("Error: Upfit items not found")
