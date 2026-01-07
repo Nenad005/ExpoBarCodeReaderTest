@@ -12,6 +12,7 @@ class SessionResponse(BaseModel):
     clubName: str
     clubId: str
 
+ProductBarcodes = dict[str, Optional[str]]
 
 class ErrorResponse(BaseModel):
     detail: str

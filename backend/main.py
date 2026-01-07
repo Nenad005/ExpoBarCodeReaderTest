@@ -77,8 +77,26 @@ def insert_if_not_exists_bulk(session: Session, model: type[SQLModel], objects: 
     "/products/update_many"
 )
 def bulk_upsert_products(products: list[Product], session: Session = Depends(get_session)):
-    
     upsert(session, Product, products)
+
+@app.get(
+    "/products/barcodes",
+    response_model=ProductBarcodes,
+    responses={
+        200: {"description": "Successfully retrieved product barcodes", "model": ProductBarcodes},
+        500: {"description": "Internal server error", "model": ErrorResponse},
+    }
+)
+def get_product_barcodes(session: Session = Depends(get_session)):
+    try:
+        products = session.exec(select(Product)).all()
+        return {product.id: product.barcode for product in products}
+    except Exception as e:
+        logger.error(f"Error retrieving product barcodes: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving product barcodes: {str(e)}"
+        )
 
 @app.post(
     "/warehouses/update"
